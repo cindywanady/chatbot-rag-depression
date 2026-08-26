@@ -1,0 +1,114 @@
+# Gold relevance passages for the retrieval evaluation.
+#
+# These are the RELEVANCE UNITS of the evaluation: each gold passage is one
+# clinical concept with a char span into data/derived/cleaned_text.txt.
+# Questions are generated FROM these passages, and chunk relevance is later
+# judged by char-overlap against these spans. They are built from the retained
+# segments, NOT from the chunks under test, so no chunking strategy is
+# favoured.
+#
+# This file is the human-auditable judgement layer. `build_gold_passages.py`
+# resolves it deterministically: whole-segment passages take the segment span;
+# split passages are cut at literal `anchor` substrings (first occurrence), each
+# part labelled with one concept. The first split has no anchor (segment start).
+# The builder verifies cleaned_text[char_start:char_end] == passage text for
+# every passage, so spans are exact.
+#
+# CONCEPT ASSIGNMENT & SPLITS follow the Stage-2 LLM annotation by Claude
+# (configs/prompts/gold_passage_concept_audit.md, gold-concept-v1) over the blind
+# segments. Claude marked MI.8 referral (MI8_0064-0066) OUT of depression scope,
+# so it is excluded; depression-specific referral is covered by MI4_0042.
+
+# Clinical concepts present in the in-scope text. The list was drafted top-down
+# from the guideline's own structure and independently corroborated bottom-up by
+# inductive LLM concept derivation (Stage 1, gold-concept-induction-v1, run
+# blind on Claude + GPT). `special_populations` exists because the question
+# taxonomy needs it; `differential_comorbidity` was surfaced by both inductive
+# runs and added on that basis.
+concepts:
+  - definition_course
+  - risk_factors
+  - somatic_presentation
+  - main_symptoms
+  - additional_symptoms
+  - diagnostic_criteria
+  - pharmacotherapy_dosing
+  - psychoeducation
+  - referral_criteria
+  - suicide_risk_emergency
+  - special_populations
+  - differential_comorbidity
+
+# segment_id -> concept (whole segment) OR ordered splits (multi-concept segment).
+# Ordered by source unit and segment id.
+passages:
+  # --- MI.1: depression detection & suicide -----------------------------------
+  # REMOVED 2026-07-26 — MI1_0003 (was: somatic_presentation, "DEPRESI presentation
+  # cues"). It is Tabel 1, the WHO mhGAP-IG Master Chart: a four-row, two-column
+  # table (DEPRESI / PSIKOSIS / GANGGUAN PERKEMBANGAN / GANGGUAN PERILAKU) that PDF
+  # extraction flattens, because PyMuPDF reads the columns in y-order and detaches
+  # each row label from its bullets. Consequences in this segment:
+  #   * the DEPRESI row is split across MI1_0002 and MI1_0003, cut mid-sentence
+  #     ("...aktivitas yang" | "seharusnya menarik dan dapat dinikmati");
+  #   * the whole PSIKOSIS row sits inside a segment headed DEPRESI, so the passage
+  #     was neither complete for depression nor exclusive to it.
+  # Exactly one of the three non-depression rows leaked in, so keeping it was an
+  # artifact of where the segment boundary fell, not a scope decision — and the
+  # same out-of-depression-scope rule already excludes MI8_0064-0066 (see header).
+  # Its content is covered by 5-11 other gold passages; somatic presentation in
+  # particular by MI4_0024, which carries the Nakao et al. frequency table. Dropping
+  # it orphaned no concept (somatic_presentation 2 -> 1) and left 31/31 passages
+  # cited by >= 1 question. Questions dep_0001, dep_0002, dep_0003 were dropped with
+  # it. Full reasoning: documents/pipeline_audit_20260726.md.
+  - segment_id: MI1_0017                                               # BUNUH DIRI block (note: heading-merge artifact)
+    splits:
+      - { concept: suicide_risk_emergency }                                            # self-harm/suicide history cue
+      - { concept: diagnostic_criteria, anchor: "Setelah terdeteksi kemungkinan" }     # detection -> diagnosis flow
+
+  # --- MI.4 Pokok Bahasan A: definition, course, risk factors -----------------
+  - segment_id: MI4_0022
+    splits:
+      - { concept: definition_course }                                          # definition + epidemiology/burden
+      - { concept: risk_factors, anchor: "Faktor risiko yaitu faktor" }         # risk/precipitating/protective factors
+      - { concept: definition_course, anchor: "Dampak Gangguan Depresi" }       # course / consequences
+  - { segment_id: MI4_0023, concept: definition_course }                # prevalence & comorbidity
+
+  # --- MI.4 Pokok Bahasan B: symptoms, diagnosis, differential ----------------
+  - { segment_id: MI4_0024, concept: somatic_presentation }            # somatic symptom profile
+  - segment_id: MI4_0025
+    splits:
+      - { concept: main_symptoms }                                              # 3 gejala utama
+      - { concept: additional_symptoms, anchor: "Gejala-gejala tambahan depresi" }  # 7 gejala tambahan
+      - { concept: diagnostic_criteria, anchor: "Kriteria Diagnosis Depresi" }      # criteria thresholds
+  - { segment_id: MI4_0026, concept: diagnostic_criteria }             # Belajar Kasus: worked diagnostic case
+  - { segment_id: MI4_0027, concept: diagnostic_criteria }             # 7-step diagnostic procedure
+  # differential diagnosis & comorbid-condition reminders (bipolar/psychotic
+  # "Pengingat" + comorbid-illness "Perhatian" cautions):
+  - { segment_id: MI4_0028, concept: differential_comorbidity }        # Pengingat: Gangguan Bipolar
+  - { segment_id: MI4_0029, concept: differential_comorbidity }        # Perhatian: bipolar -> stop/refer
+  - { segment_id: MI4_0030, concept: differential_comorbidity }        # Pengingat: Gangguan Psikotik
+  - { segment_id: MI4_0031, concept: differential_comorbidity }        # Perhatian: terapi bila gejala psikotik
+  - { segment_id: MI4_0032, concept: differential_comorbidity }        # Pengingat: penyakit fisik menyertai
+  - { segment_id: MI4_0033, concept: differential_comorbidity }        # Perhatian: terapi bila penyakit fisik
+  # special-population reminders:
+  - segment_id: MI4_0034                                               # pregnancy / breastfeeding (split)
+    splits:
+      - { concept: special_populations }                                                        # postpartum presentation & risk
+      - { concept: pharmacotherapy_dosing, anchor: "Penggunaan antidepresan selama kehamilan" } # antidepressant use in pregnancy
+  - { segment_id: MI4_0035, concept: special_populations }            # children & adolescents
+  - { segment_id: MI4_0036, concept: special_populations }            # elderly
+
+  # --- MI.4 Pokok Bahasan C: management ---------------------------------------
+  - { segment_id: MI4_0037, concept: psychoeducation }               # treatment-approach overview
+  - { segment_id: MI4_0038, concept: psychoeducation }               # psychosocial intervention / psychoeducation
+  - { segment_id: MI4_0039, concept: pharmacotherapy_dosing }        # antidepressant classes & counselling
+  - { segment_id: MI4_0040, concept: pharmacotherapy_dosing }        # prescribing precautions by subgroup
+  - { segment_id: MI4_0041, concept: pharmacotherapy_dosing }        # fluoxetine/amitriptyline dosing & titration
+
+  # --- MI.4 Pokok Bahasan D: referral -----------------------------------------
+  - { segment_id: MI4_0042, concept: referral_criteria }             # when to refer a depression case
+
+  # --- MI.7: suicide risk & emergency handling --------------------------------
+  - { segment_id: MI7_0047, concept: suicide_risk_emergency }        # types/signs of suicidal behaviour
+  - { segment_id: MI7_0055, concept: suicide_risk_emergency }        # suicide-risk assessment (risk/protective factors)
+  - { segment_id: MI7_0063, concept: suicide_risk_emergency }        # emergency management of suicidality

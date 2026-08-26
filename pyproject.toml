@@ -1,0 +1,57 @@
+[build-system]
+requires = ["setuptools>=65", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "chatbot-dep"
+version = "0.1.0"
+description = "Retrieval evaluation for a depression case-management RAG over the Indonesian MoH primary-care mental-health guideline: chunking strategies x embedding models, scored on a gold QA set."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "Proprietary - thesis research" }
+authors = [{ name = "cwan0001" }]
+
+# Runtime dependencies for the chunking pipeline, pinned for reproducibility.
+# The embedding/indexing stack (torch, sentence-transformers, faiss) is an
+# optional extra below so the chunking stages stay installable without it.
+dependencies = [
+    "PyMuPDF==1.24.10",      # layout-aware PDF extraction + rasterization (fitz)
+    "transformers==4.46.2",  # reference tokenizer (XLM-R / e5) for token sizing
+    "tokenizers==0.20.3",    # fast tokenizer backend (char offset mapping)
+    "sentencepiece==0.2.0",  # required by the XLM-R/e5 tokenizer
+    "PyYAML==6.0.2",         # config loading
+    "pandas==2.2.3",         # parquet chunk records
+    "pyarrow==17.0.0",       # parquet engine
+    "numpy==2.1.3",
+]
+
+[project.optional-dependencies]
+dev = ["pytest==8.3.3"]
+# Embedding + indexing extra. Install with: pip install -e ".[embed]"
+# torch pulls the CUDA build on Linux; use the CPU wheel index for CPU-only hosts.
+embed = [
+    "torch==2.12.1",
+    "sentence-transformers==3.4.1",
+    "faiss-cpu==1.14.3",
+    "einops==0.8.2",          # required by the nomic custom architecture
+]
+# Alodokter community-QA scraper (scripts/alodokter_scraper.py). Playwright is
+# optional on top of this: pip install playwright && playwright install chromium.
+scrape = [
+    "requests>=2.32",         # already pulled in transitively by huggingface-hub
+    "beautifulsoup4==4.15.0",
+    "lxml==6.1.1",
+]
+
+[project.scripts]
+# CLI entry points (also runnable as `python -m depression_rag.<module>`).
+depression-rag-chunk = "depression_rag.cli:main"
+depression-rag-index = "depression_rag.cli_index:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+filterwarnings = ["ignore::DeprecationWarning"]

@@ -1,0 +1,11 @@
+# RAGAS evaluation environment (.venv-ragas) — used only by scripts/ragas_eval.py.
+# Kept separate because langchain's dependency tree conflicts with the frozen
+# Phase-1 environment (.venv) and the chat stack (.venv-chat).
+ragas==0.2.14
+langchain==0.3.30
+langchain-community==0.3.31
+langchain-openai==0.2.14
+langchain-huggingface==0.1.2
+datasets==5.0.0
+sentence-transformers==5.6.0
+openai==1.109.1

@@ -1,0 +1,57 @@
+# Cross-strategy relevance mapping for the retrieval evaluation.
+#
+# This file declares the relevance threshold ONCE and freezes it. Because every
+# chunking strategy cuts the source text at different boundaries, "the relevant
+# chunk" is defined at the SOURCE-SPAN level and mapped onto each strategy's
+# chunks by char-span overlap — identically for every index — so Recall@k /
+# MRR / nDCG are comparable across the whole grid.
+#
+# A retrieved chunk is RELEVANT to a question if, for ANY gold passage the
+# question cites, the char-span overlap passes the threshold below.
+
+relevance:
+  # overlap = |chunk_span ∩ gold_span| (chars).
+  # fraction = overlap / |denominator span|.
+  #
+  # denom options:
+  #   shorter  overlap / min(|chunk|, |gold|)   (default)
+  #   gold     overlap / |gold|                 (answer-containment / DPR-style)
+  #   chunk    overlap / |chunk|
+  #
+  # Why "shorter" is the default: gold passages span two size regimes
+  # (main_symptoms ~330 chars … referral_criteria ~24,803 chars). Normalising by
+  # the shorter span makes the rule size-robust: a small gold passage fully
+  # inside a large chunk scores 1.0, and a small chunk fully inside a large gold
+  # passage also scores 1.0. Under "gold", large passages could never be
+  # satisfied by any single chunk. scripts/retrieval_sensitivity.py re-scores
+  # everything under "gold": on the selection grid (see selection_grid_models
+  # below) the pick is unchanged. Across ALL scored indexes a post-selection
+  # bge-m3 index takes nominal rank 1 by 0.0017 — the report states both.
+  denom: shorter
+  min_overlap_frac: 0.5
+
+  # k cutoffs for Recall@k / Precision@k / MRR@k / nDCG@k.
+  k_values: [1, 3, 5, 10]
+
+  # Primary selection metric, frozen here before any index was scored.
+  # Tie-breakers (in the writeup): robustness across question types
+  # (esp. risk_suicide_emergency) → index size / latency → build cost.
+  primary_metric: ndcg@5
+
+  # Binary relevance (every gold passage graded 1). nDCG still applies; set to
+  # true later only if gold passages are given graded relevance.
+  graded: false
+
+  # The embedding models that were in the grid when the configuration was
+  # SELECTED (2026-07-02). BGE-M3 was added 2026-07-12 as a POST-selection
+  # robustness challenger: it is scored and reported alongside, but a claim about
+  # "the selection" has to be evaluated on the grid the selection was made on.
+  #
+  # This exists because leaving it implicit already produced a contradiction:
+  # scripts/retrieval_sensitivity.py compared all 71 indexes and reported
+  # "winner unchanged: NO" (a bge-m3 index edges ahead by 0.0017 under
+  # denom=gold), while README §3 and this file's own note claimed the opposite.
+  # Both were right about different index sets. Scripts that make a selection
+  # claim now report BOTH views explicitly.
+  # Empty or absent -> no split; every scored index counts as in-grid.
+  selection_grid_models: [e5-large, indobert, nomic-indonesian, minilm]

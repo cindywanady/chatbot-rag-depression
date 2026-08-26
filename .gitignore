@@ -1,0 +1,108 @@
+# ---- environments & caches (huge, machine-specific) ----
+.venv*/
+.hf_cache/
+__pycache__/
+*.pyc
+.pytest_cache/
+src/*.egg-info/
+.gradio/
+
+# ---- generated pipeline outputs (reproducible from scripts) ----
+# indexes/chunks/manifests are rebuilt by run_chunking.py + run_indexing.py;
+# analysis/evaluation artifacts by the eval scripts. Keep them out of git.
+outputs/
+
+# ---- source data: DO NOT publish ----
+# - the Kemenkes guideline PDF and paper PDFs are copyrighted
+# - data/derived contains scraped Alodokter question text (secondary data;
+#   the ethics protocol commits to storing it securely, not disseminating it)
+data/*
+!data/README.md
+# data/derived/SEALED_* are the researcher-only keys (scrub table, source-URL map)
+# that make the de-identification reversible; covered by data/* above, named here
+# so the exclusion is obvious rather than incidental.
+
+# ---- researcher-only study notes ----
+# These carry the risk-flag masking and the IRR overlap. Publishing them mid-
+# collection would prime the exact safety behaviour the study measures, and the
+# counselors can reach a public repo.
+documents/evaluation/INTERNAL_*
+
+# ---- run/session logs & history ----
+*.log
+*.bak
+archive/
+
+# ---- binary documents (slides, forms, proposals) ----
+*.pptx
+*.docx
+*.pdf
+*.zip
+
+# ---- thesis submission (keep out of the public repo until after marking) ----
+documents/thesis/
+
+# ---- OS/editor noise ----
+.DS_Store
+*.swp
+
+# =====================================================================
+# Journal-supplement curation: this repo publishes CODE + METHOD only.
+# Everything below exists in the working tree but is not supporting
+# material for the paper — it is manuscript, unpublished result,
+# participant-facing instrument, internal process record, or site ops.
+# =====================================================================
+
+# ---- manuscript sources: under review, not supplementary material ----
+documents/thesis_jmir/
+documents/jmir_latex/
+documents/thesis_submit/
+
+# ---- study results: unpublished, collection still open ----
+documents/results/
+
+# ---- study instruments, participant forms, ethics amendments ----
+# Publishing instruments mid-collection primes the behaviour being measured;
+# same reasoning as the INTERNAL_* rule above, applied to the whole folder.
+documents/evaluation/
+
+# ---- internal process records, not method ----
+# Session handovers, audit prompts, QA audit reports, thesis context
+# packs, post-hoc fix notes, the build spec. These document how the work was
+# managed, which is not what a code-availability statement is for.
+documents/SESSION_HANDOVER_*.md
+documents/THESIS_CONTEXT_PACK.md
+documents/PIPELINE_AUDIT_PROMPT.md
+documents/pipeline_audit*.md
+documents/stage1_audit_*.md
+documents/prompt_fix_*.md
+documents/build_spec_phase1.md
+
+# ---- site operations & participant correspondence ----
+# SLURM/Gradio runbooks are specific to one cluster and one launch; the
+# counselor email drafts are correspondence, not method.
+documents/running_the_chatbot.md
+documents/gradio_link_runbook.md
+documents/reconnect_gradio.md
+documents/email_konselor.md
+
+# ---- planning notes: journal target shortlist ----
+documents/publication_targets.md
+
+# ---- supervisor-facing explainers & one unvalidated one-off probe ----
+# The explainers restate METHODOLOGY.md for a viva audience; tail_probe_set
+# is self-declared author-unvalidated and outside the frozen gold set.
+documents/chunking_and_extraction_explained.md
+documents/chunking_embedding_and_selection_explained.md
+documents/tail_probe_set.md
+
+# ---- rendered figures ----
+# Figure 1 ships with the manuscript; regenerate from
+# scripts/build_methodology_figure.py. distribution_flow is study logistics.
+documents/figures/*
+!documents/figures/methodology_figure.svg
+documents/distribution_flow.*
+
+# ---- study-administration tooling, not method ----
+scripts/build_*_slides.py
+scripts/keep_alive.py

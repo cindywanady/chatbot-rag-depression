@@ -1,0 +1,195 @@
+# =============================================================================
+# Chunking-pipeline configuration.
+#
+# Every domain decision lives here so it is visible, reviewable and reversible.
+# Values were grounded by inspecting the actual PDF, not assumed
+# (re-derive them with scripts/inspect_pdf.py).
+# =============================================================================
+
+run:
+  seed: 20260628          # fixed seed for end-to-end reproducibility
+  log_level: INFO
+
+# -----------------------------------------------------------------------------
+# SOURCE: the PDF, the printed<->physical page mapping, the MI-unit ranges,
+# the in-scope units, and the figure-transcription hook.
+# -----------------------------------------------------------------------------
+source:
+  pdf_path: "data/Modul Keswa bagi Dokter Umum di  FKTP.pdf"
+
+  # Printed page number = physical (1-based) page - printed_offset.
+  # Verified: "MATERI INTI 4" is physical page 38 and prints "36"  => offset 2.
+  printed_offset: 2
+
+  # Materi Inti units with PHYSICAL (1-based, inclusive) page ranges, found by
+  # scanning for "MATERI INTI x" headings (scripts/inspect_pdf.py).
+  units:
+    - { name: "MI.1", phys_start: 3,   phys_end: 14,  title: "Deteksi Dini Masalah Kesehatan Jiwa" }
+    - { name: "MI.2", phys_start: 15,  phys_end: 25,  title: "Wawancara Psikiatrik" }
+    - { name: "MI.3", phys_start: 26,  phys_end: 37,  title: "Gangguan Ansietas" }
+    - { name: "MI.4", phys_start: 38,  phys_end: 59,  title: "Penegakan Diagnosis dan Penatalaksanaan Gangguan Depresi" }
+    - { name: "MI.5", phys_start: 60,  phys_end: 73,  title: "Gangguan Psikotik" }
+    - { name: "MI.6", phys_start: 74,  phys_end: 97,  title: "Demensia" }
+    - { name: "MI.7", phys_start: 98,  phys_end: 127, title: "Kegawatdaruratan Psikiatrik" }
+    - { name: "MI.8", phys_start: 128, phys_end: 143, title: "Sistem Rujukan dan Rujuk Balik" }
+    - { name: "MI.9", phys_start: 144, phys_end: 148, title: "Pencatatan dan Pelaporan" }
+
+  # Scope: "case-management scope" = MI.4 (the depression unit) plus the
+  # depression-relevant units (early detection, psychiatric interview,
+  # emergencies/suicide, referral) — chosen because the highest-stakes queries
+  # (suicide risk) live outside MI.4. The same scope MUST be used for the index
+  # and the eval QA set. To index MI.4 only, set: scope: ["MI.4"].
+  scope: ["MI.1", "MI.2", "MI.4", "MI.7", "MI.8"]
+
+  # Figure hook: text-extraction is blind to raster images. The one figure
+  # in MI.4 is 730x545 on PHYSICAL page 46 (= printed 44). RESOLVED 2026-07-02:
+  # the figure was reviewed and its content (the Nakao et al. 2001 somatic-symptom
+  # frequency table, "Kelelahan 86% ... Nyeri sendi 16%") is ALREADY present in
+  # the extracted text layer (segment MI4_0024), so the raster is redundant and
+  # `text` is intentionally left empty — nothing clinical is lost. The empty-text
+  # skip warning at run time is expected.
+  # (Fill `text` only if a future figure carries information absent from the text.)
+  figure_transcriptions:
+    - physical_page: 46
+      unit: "MI.4"
+      pokok_bahasan: "B"
+      heading: "GEJALA SOMATIK PADA PASIEN DEPRESI (Nakao et al., 2001)"
+      content_type: "somatic_symptoms"
+      text: ""   # intentionally empty: figure duplicates text in MI4_0024 (see above)
+
+# -----------------------------------------------------------------------------
+# CLEANING. The glyph map turns Symbol/Wingdings PUA bullets into one
+# consistent marker while PRESERVING clinical glyphs (>= , down-arrow, 1/4,
+# 1/2, en-dash). Codepoints were taken from a census of the in-scope pages.
+# Line separators (U+2028/2029), NBSP and soft hyphen are normalized
+# unconditionally in code.
+# -----------------------------------------------------------------------------
+cleaning:
+  drop_page_number_header: true   # the printed number is the first block on each page
+  dehyphenate: true               # join "word-\nword" keeping the hyphen (safe for ID reduplication)
+  bullet_marker: "•"         # the single normalized bullet (the dot)
+  glyph_map:                      # hex codepoint -> replacement
+    "F0B7": "•"   # Symbol/Wingdings bullet
+    "F0A7": "•"   # Wingdings square bullet
+    "F0D8": "•"   # Wingdings list marker
+    "F076": "•"   # Wingdings list marker
+    "F02D": "•"   # Symbol minus used as bullet
+    "25CF": "•"   # BLACK CIRCLE -> bullet
+    "00BB": "•"   # >> used as a sub-bullet
+    "F0FC": "✓"   # Wingdings check -> check mark
+    "F0E0": "→"   # Wingdings arrow -> right arrow
+    "F0E8": "→"   # Wingdings arrow -> right arrow
+    "2016": " "        # double vertical line (table artifact) -> space
+    "2015": "—"   # horizontal bar -> em dash
+
+# -----------------------------------------------------------------------------
+# SEGMENTATION. Clinical body = from the "Uraian Materi" anchor to the
+# "Referensi" anchor (or the next unit). Everything before it is teaching
+# scaffolding; references are dropped. content_type tags are a best-effort
+# keyword heuristic - reversible and spot-checkable.
+# -----------------------------------------------------------------------------
+segmentation:
+  clinical_start_markers: ["uraian materi"]
+  reference_markers: ["referensi", "daftar pustaka", "kepustakaan", "daftar bacaan"]
+  retain_roles: ["clinical"]      # add "reference" to also index citations
+  merge_adjacent_atomic: true     # keep a split tightly-coupled block as one segment
+
+  # Extra structural sub-headings this guideline uses that are NOT all-caps, so
+  # the caps/roman heading detector misses them. Each (case-insensitive prefix,
+  # leading bullets stripped) starts a new clinical subsection. This encodes the
+  # document's own hierarchy for structure-aware chunking. Breaking at "kriteria
+  # diagnosis" then merging adjacent atomic segments keeps the WHOLE diagnostic
+  # criteria block (3 main + 7 additional + threshold) together while separating
+  # the somatic-frequency table and the case vignette.
+  subsection_markers:
+    - "depresi memiliki gejala"   # start of the diagnostic-criteria narrative
+    - "kriteria diagnosis"        # the 2-of-3 / 3-of-7 / 2-week threshold block
+    - "belajar kasus"             # worked case vignette
+    - "contoh kasus"
+    - "langkah-langkah"           # step-by-step diagnostic procedure
+    - "pengingat"                 # the "Pengingat:" reminder boxes
+    - "perhatian"
+    - "penting:"
+
+  # Vignette markers -> content_type = case_example (include/exclude per experiment).
+  case_markers: ["belajar kasus", "contoh kasus", "ilustrasi kasus"]
+
+  # Suicide-risk terms. risk_suicide is assigned only when one of these terms
+  # appears in the section HEADING path; body mentions alone (even several) do
+  # not relabel a segment whose topic is something else. A body-mention-count
+  # rule was tried first and retired: it kept firing on incidental mentions,
+  # e.g. "bunuh diri" appearing once as one of the seven additional depression
+  # symptoms (see segmentation.py _classify).
+  suicide_terms: ["bunuh diri", "menyakiti diri", "melukai diri", "self-harm", "self harm", "suicide"]
+
+  # A tightly-coupled clinical unit is COMPACT. A segment is atomic (never split
+  # by structure-aware chunking) only if it is an atomic content_type AND <=
+  # max_atomic_chars; larger sections that merely match a keyword are split
+  # normally so they do not become one giant chunk. Tiny fragments are merged.
+  # NOTE (2026-08-02): this gate is in CHARACTERS while the encoder budget is in
+  # TOKENS. 512 e5 tokens ~= 2 590 chars on this corpus, so 6000 admits atomic
+  # segments ~2.3x larger than the encoder can see. Four atomic `dosage` segments
+  # consequently embed with 40-57% of their text clipped in the SINGLE-VECTOR
+  # indexes (the deployed __mv index windows them, so deployment loses nothing).
+  # Express as a token budget before any future rebuild. See
+  # documents/stage1_audit_20260802.md.
+  max_atomic_chars: 6000
+  min_segment_chars: 20
+
+  # Judge-adjudicated content_type corrections, applied AFTER the rule cascade.
+  # Path is relative to THIS file's directory, so moving a config takes its
+  # overrides with it. This is a REAL input: an override flips a segment's
+  # content_type and therefore its `atomic` flag, which changes what the
+  # structure-aware chunker emits — dropping it silently rewrites every chunk
+  # file (7 content_types and 6 atomic flags move on this corpus). Because the
+  # key is set here, a missing file is a hard error, not a silent fallback.
+  # Set to `null` to run on rules alone, on purpose.
+  content_type_overrides: content_type_overrides.yaml
+
+  # Resolution order for the remaining content types (first match wins).
+  # case_example and risk_suicide are decided first, in code (see segmentation.py).
+  content_type_priority:
+    [criteria, dosage, somatic_symptoms, referral_criteria, clinical_exposition]
+
+  # Each rule fires if ANY any_keyword is present OR ALL all_keywords are present
+  # (case-insensitive substring match on segment text and heading_path). The
+  # dosage rule is additionally triggered by a numeric mg dose pattern in code.
+  content_type_rules:
+    - { content_type: criteria,          all_keywords: ["gejala utama", "gejala tambahan"] }
+    - { content_type: criteria,          any_keywords: ["kriteria diagnosis", "pedoman diagnostik", "gejala utama", "gejala tambahan"] }
+    - { content_type: dosage,            any_keywords: ["mg/hari", "fluoksetin", "fluoxetine", "sertralin", "sertraline", "amitriptilin", "amitriptyline", "imipramin", "klomipramin", "maprotilin"] }
+    - { content_type: somatic_symptoms,  any_keywords: ["gejala somatik", "keluhan somatik", "keluhan fisik", "gejala fisik tanpa"] }
+    - { content_type: referral_criteria, any_keywords: ["kriteria rujukan", "indikasi rujukan", "kapan merujuk", "rujuk balik", "rujukan kasus"] }
+
+# -----------------------------------------------------------------------------
+# CHUNKING. One reference tokenizer fixes "tokens" across configs. The sweep
+# below is expanded into individual configs: fixed/recursive sweep
+# {128,256,512} x {0,64}; structure sweeps the context-enriched ablation.
+# 128 is included as a common (near-)no-truncation condition for all four
+# embedding models (MiniLM truncates at 128).
+# -----------------------------------------------------------------------------
+chunking:
+  reference_tokenizer: "intfloat/multilingual-e5-large"   # the XLM-R tokenizer
+  offline: false          # set true to require the locally cached tokenizer only
+  sweep:
+    fixed:     { sizes: [128, 256, 512], overlaps: [0, 64], context_enriched: [false] }
+    recursive: { sizes: [128, 256, 512], overlaps: [0, 64], context_enriched: [false] }
+    structure: { sizes: [512],           overlaps: [0],     context_enriched: [false, true] }
+
+# -----------------------------------------------------------------------------
+# OUTPUT. Chunks are written per config_id; the canonical cleaned text and
+# segment tables are written once. Everything is keyed for the indexing stage.
+# -----------------------------------------------------------------------------
+output:
+  # jsonl only. Every consumer in this repo opens .jsonl — the indexing stage
+  # (indexing_pipeline._load_chunks, and _discover_config_ids globs *.jsonl),
+  # the retrieval harness and the chatbot. Parquet was written alongside for
+  # years and never read back (`grep -rn read_parquet src/ scripts/` -> nothing),
+  # so it was dropped 2026-07-26; the orphaned copies are in
+  # archive/audit_20260726/unread_parquet/. Add "parquet" back if you want
+  # columnar copies for ad-hoc analysis outside the pipeline.
+  formats: ["jsonl"]
+  derived_dir: "data/derived"         # cleaned_text.txt, segments.jsonl, segments_dropped.jsonl
+  chunks_dir: "outputs/chunks"        # <config_id>.jsonl
+  manifests_dir: "outputs/manifests"  # <run_id>.json
+  logs_dir: "outputs/logs"            # <run_id>.log (JSON lines)

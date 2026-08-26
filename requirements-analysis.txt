@@ -1,0 +1,5 @@
+# Study-analysis tooling (installed into .venv, on top of the base + [embed] install).
+# Used by scripts/analyze_study.py and the study-kit answer converter.
+# pandas / scipy / numpy / scikit-learn already come with the base + [embed] deps.
+statsmodels==0.14.6   # the pre-registered mixed model (P2 primary analysis)
+openpyxl==3.1.5       # read the filled psychologist/counselor .xlsx score sheets

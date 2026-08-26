@@ -1,0 +1,312 @@
+# =============================================================================
+# Deployed-chatbot configuration (Phase 2).
+#
+# One role: a decision-support tool FOR the counselor; surfaces grounded
+# information, citations, considerations and risk flags, and never writes a
+# final patient-facing answer.
+#
+# All prompts are in Indonesian: the corpus, the questions, the counselors and
+# the evaluating psychologist are Indonesian, and an Indonesian prompt keeps
+# the whole instrument auditable by them. If validation shows weak instruction-
+# following, the documented fallback is an English scaffold with an explicit
+# "always answer in Indonesian" rule - change it here, not in code.
+# =============================================================================
+
+run:
+  seed: 20260628
+  log_dir: "outputs/chat_logs"    # one JSONL per session: prompt, chunks, output
+
+retriever:
+  # deployment index: the selected configuration, multi-vector variant
+  # (metrically tied with the evaluated winner, strictly better coverage of the
+  # four oversize dosage blocks - see documents/pipeline_audit.md §5.2).
+  # NOT built by a default `cli_index` run (embedding_models.yaml keeps
+  # multi_vector: false so the selection grid stays single-vector). Rebuild it with:
+  #   python -m depression_rag.cli_index --models e5-large \
+  #       --configs structure-512-0 --multi-vector
+  index_dir: "outputs/indexes/structure-512-0__e5-large__mv"
+  embedding_config: "configs/embedding_models.yaml"
+  model: "e5-large"
+  # k=5 per the Phase-2 planning spec (start at 5, tune range {3,5}); decision recorded in
+  # documents/evaluation/README_evaluation_design.md §5c. Gold-set cost (mv index):
+  # 6/121 questions lack a relevant chunk in the top 5, none of them safety-critical
+  # (risk_suicide recall@5 = 1.0); k=10 would recover 5 of the 6 (dep_0072 stays
+  # outside the top 10) at the cost of ~2x prompt context.
+  k: 5
+
+generator:
+  # Served by vLLM as a local OpenAI-compatible endpoint. Start the server first:
+  #   HF_HOME=$PWD/.hf_cache .venv-vllm/bin/vllm serve google/gemma-4-12B-it \
+  #       --dtype bfloat16 --gpu-memory-utilization 0.85 --port 8000
+  # backend "hf" runs the model in-process with transformers instead (no server).
+  # NOTE the -it (instruction-tuned) variant: the base gemma-4-12B is a plain
+  # completion model and does not follow system prompts. Generator changed from
+  # the original plan's Gemma-3-12B — document as a protocol update and
+  # re-validate Indonesian grounding before the study.
+  backend: openai
+  checkpoint: "google/gemma-4-12B-it"
+  base_url: "http://127.0.0.1:8000/v1"
+  api_key_env: VLLM_API_KEY   # unset -> "EMPTY", fine for a local vLLM server
+  dtype: "bfloat16"
+  # 700 truncated structured briefing answers mid-sentence (~3.1k chars);
+  # 1200 lets the four-section format finish. ~20 tok/s on the A40, so expect
+  # up to ~60s for the longest answers (the submit/poll UI shows progress).
+  max_new_tokens: 1200
+  temperature: 0.2      # low for clinical consistency (0.0-0.3 band)
+  top_p: 0.9
+
+safety:
+  # Keyword pre-screen on every input (Indonesian + common English variants).
+  # A hit forces the counselor-facing safety banner (escalation-first, below)
+  # and is recorded in the interaction log.
+  #
+  # Matching is normalised (chatbot.py:risk_screen): case, punctuation and
+  # spacing are folded, and a second de-spaced pass catches run-together typos,
+  # so "bunuh-diri", "bunuh  diri" and "bunuhdiri" all hit the one entry below.
+  # Write entries in their plain form; do not add spelling variants by hand.
+  #
+  # EXPANDED 2026-08-06. The original 15 formal phrases matched none of 16
+  # realistic colloquial probes, and only 11 of the 50 study questions — the
+  # other 13 risk flags in outputs/analysis/study_answers_chatbot.jsonl came
+  # from the LLM stage alone. The additions below are informal registers
+  # (pengen/pengin, gak/nggak), euphemism, and the self-harm and overdose
+  # vocabulary people actually type.
+  #
+  # This list is a PRE-screen, deliberately over-inclusive: a hit only raises a
+  # banner and adds a risk instruction to the prompt, so a false positive costs
+  # a redundant warning while a miss costs the warning entirely. It WILL fire on
+  # a counselor's informational question ("cara menilai risiko bunuh diri") —
+  # that is accepted, not a defect.
+  keywords:
+    # --- explicit suicide ---
+    - bunuh diri
+    - bundir
+    - gantung diri
+    - mengakhiri hidup
+    - akhiri hidup saya
+    - percobaan bunuh diri
+    - suicide
+    - suicidal
+    # --- wish to die / disappear ---
+    - ingin mati
+    - pengen mati
+    - pengin mati
+    - mau mati
+    - lebih baik mati
+    - tidak ingin hidup
+    - tidak ada gunanya hidup
+    - capek hidup
+    - lelah hidup
+    - ingin menghilang
+    - pengen hilang
+    - pengen ilang
+    - pengin hilang
+    - pengin ilang
+    - nyusul almarhum
+    - tidak kuat lagi
+    - gak kuat lagi
+    - nggak kuat lagi
+    - tidak sanggup lagi
+    - gak sanggup lagi
+    # --- self-harm ---
+    - menyakiti diri
+    - nyakitin diri
+    - melukai diri
+    - self harm
+    - self-harm
+    - self injury
+    - menyayat
+    - mengiris tangan
+    - gores tangan
+    - silet
+    - cutting
+    - membenturkan kepala
+    # --- added 2026-08-08 after a pre-deployment probe ---
+    # Each of these was confirmed to produce NO keyword hit against the 45-term
+    # list, leaving the LLM stage as the only guard. It caught all of them in
+    # testing, but the pre-screen is the cheaper and more predictable layer and
+    # there is no reason for it to miss the base form of a verb it already
+    # carries an inflection of ("mengakhiri hidup" was present, "ngakhirin" not).
+    - ngakhirin hidup
+    - ngakhiri hidup
+    # "...kepikiran buat ngakhirin semuanya" — the euphemism drops "hidup"
+    # entirely. Kept as two words rather than a bare "ngakhiri", which the
+    # de-spaced pass would find inside the ordinary "mengakhiri rapat".
+    - ngakhirin semua
+    - mengakhiri semua
+    - akhiri semua
+    - pikiran untuk mati
+    - pikiran bunuh diri
+    - kill myself
+    - end my life
+    - nyilet
+    - menyilet
+    - ngiris tangan
+    # --- method / means ---
+    - overdosis
+    - baygon          # the most commonly named means in Indonesian forum posts
+    # "od obat", not a bare "od": matching is de-spaced, and "od" alone is a
+    # substring of ordinary words ("metode", "produk") — it would fire constantly
+    - od obat
+    - minum obat banyak
+    - loncat dari
+    - menabrakkan diri
+  # Second stage: ask the generator to classify the input (enabled when the
+  # generator is loaded; skipped in dry-run mode).
+  llm_check: true
+  # Risky-input behaviour: escalation-FIRST. The answer leads with the fixed
+  # safe response below, then continues with a grounded answer generated under
+  # an explicit risk instruction (validate feelings, route to MI.7/MI.8, never
+  # attempt crisis counselling in chat). Record this in the methods/safety
+  # section.
+  # Crisis line RE-VERIFIED 2026-08-02 (previously 2026-07-13). Kemenkes
+  # Healing119.id — the relaunch of SEJIWA, same 119 ext 8 number (relaunched
+  # 2025-07-31, Dit. Keswa + IPK Indonesia).
+  #
+  # Still valid, confirmed against three sources:
+  #   * 119 ext. 8            — agreed by all three
+  #   * www.healing119.id     — site live; its own page reads
+  #                             "Hubungi 119 ext. 8 untuk darurat bunuh diri"
+  #   * free and anonymous    — "disediakan secara gratis ... secara anonim"
+  #
+  # UNRESOLVED — operating hours. Two government sources disagree, and the
+  # service's own site states no hours at all:
+  #   kesprimkom.kemkes.go.id (2025-08-07): "beroperasi dari pagi hingga malam hari"
+  #   infopublik.id           (2025-12-19): "dapat diakses 24 jam"
+  # InfoPublik is four months newer, so the hours were probably extended — but
+  # this could not be confirmed. Do not state the hours to participants.
+  #
+  # IGD / puskesmas stays the FIRST escalation regardless of the hours, and for a
+  # stronger reason than the 2026-07-13 note gave: Healing119 is psychological
+  # first aid, not emergency response. Its own site says it is "bukan layanan
+  # terapi klinis jangka panjang, melainkan pertolongan pertama psikologis", with
+  # sessions capped at 30 minutes. Acute suicide risk needs in-person assessment
+  # first; the hotline is the support layer behind it.
+  #
+  # On 112: an earlier version of this comment said the first escalation was
+  # "IGD/puskesmas/112", but `safe_response` below has never named 112. Confirmed
+  # by the author 2026-08-02 that 112 was dropped DELIBERATELY — the comment was
+  # simply not updated. `safe_response` is correct as written; do not add 112 back.
+  # (112 is Indonesia's general emergency dispatch line; the template routes to
+  # facilities that can perform a psychiatric assessment instead.)
+  #
+  # Re-verify the week before the study runs.
+  # The safe response speaks to the COUNSELOR: guideline pointers are useful here.
+  safe_response: |
+    PERINGATAN KESELAMATAN (untuk konselor): pertanyaan ini menunjukkan
+    kemungkinan risiko bunuh diri / melukai diri.
+
+    Prioritaskan keselamatan: pastikan penanya/pasien tidak sendirian, jauhkan
+    akses ke alat/cara menyakiti diri, dan arahkan segera ke layanan gawat
+    darurat, IGD, atau puskesmas terdekat. Dukungan psikologis: layanan
+    Kemenkes Healing119.id (SEJIWA) — telepon 119 ext. 8, atau chat/telepon
+    melalui www.healing119.id (gratis, anonim).
+
+    Sesuai pedoman kegawatdaruratan psikiatrik dan sistem rujukan, kasus
+    dengan risiko bunuh diri memerlukan penilaian langsung dan rujukan segera
+    oleh tenaga kesehatan.
+
+  # The same escalation routes as `safe_response` above, in labelled form, for
+  # PRINTED participant materials (scripts/build_counselor_workbooks.py).
+  #
+  # Added 2026-08-06 because the workbooks carried a hand-copied second version
+  # that had drifted from the banner on both facts this file warns about: it
+  # printed 112 (dropped deliberately — see the note above; the template routes
+  # to facilities that can perform a psychiatric assessment) and asserted
+  # "jam layanan terbatas" (the hours are UNRESOLVED and must not be stated to
+  # participants). Counselors were being handed one instruction while the tool
+  # showed another. Derive, never re-type.
+  escalation:
+    emergency: >-
+      IGD / puskesmas terdekat — untuk keadaan mendesak, hubungi ini lebih dulu
+    crisis: >-
+      dukungan psikologis Kemenkes Healing119.id (SEJIWA): telepon 119 ext. 8
+      atau chat/telepon via www.healing119.id — gratis dan anonim
+
+prompts:
+  # Shared base: grounding, citation, scope, safety rules.
+  base: |
+    Anda adalah asisten informasi yang bekerja HANYA berdasarkan "Pedoman
+    Deteksi Dini dan Penatalaksanaan Gangguan Jiwa bagi Dokter Umum di FKTP"
+    (Kementerian Kesehatan RI, 2017), khusus penanganan depresi di layanan
+    kesehatan primer.
+
+    Aturan wajib:
+    1. Jawab HANYA dari KONTEKS PEDOMAN yang diberikan di bawah. Jangan
+       menambahkan pengetahuan dari luar konteks.
+    2. Tandai setiap informasi penting dengan rujukan nomor konteks dalam
+       kurung siku tepat setelah kalimat yang didukungnya, contoh: [1] atau
+       [2][3]. Tulis NOMORNYA SAJA — jangan menulis nama bagian pedoman atau
+       nomor halaman di dalam kalimat, karena antarmuka menampilkan daftar
+       rujukan lengkap di bawah jawaban. Kurung siku HANYA boleh berisi angka.
+       Jangan pernah menuliskan kode penomoran modul pedoman di mana pun —
+       tidak di dalam kalimat, dan tidak di dalam kurung siku.
+    3. Bila KONTEKS yang diberikan tidak memuat jawabannya, katakan bahwa
+       KUTIPAN YANG TERSEDIA tidak memuat hal itu. JANGAN menyatakan bahwa
+       pedoman Kemenkes tidak memuatnya — Anda hanya menerima sebagian kecil
+       pedoman, dan hal itu mungkin ada di bagian yang tidak diberikan kepada
+       Anda. Nyatakan bahwa sesuatu berada di luar cakupan pedoman HANYA bila
+       topiknya memang jelas di luar kesehatan jiwa di layanan primer.
+       Sarankan konsultasi atau rujukan ke tenaga kesehatan. Jangan mengarang.
+    4. Cakupan Anda hanya depresi di layanan primer; nyatakan keterbatasan
+       untuk hal di luar itu.
+    5. Bila ada tanda risiko bunuh diri, melukai diri, atau kegawatdaruratan,
+       utamakan keselamatan: sampaikan langkah darurat dan alur rujukan sesuai
+       kutipan yang tersedia. Jangan mencoba menangani krisis sendiri.
+    6. Setiap kali Anda menyebut kemungkinan risiko bunuh diri atau melukai
+       diri — termasuk bila hanya sebagai hal yang perlu diperiksa konselor —
+       sebutkan juga ke mana konselor harus mengarahkan bila risiko itu
+       ternyata ada: layanan gawat darurat, IGD, atau puskesmas terdekat.
+       Kalimat rute ini adalah langkah darurat baku, BUKAN isi kutipan: tulis
+       TANPA penanda [n] dan jangan mengaitkannya dengan nomor kutipan mana
+       pun. JANGAN mengangkat risiko tanpa memberi rute tindak lanjutnya.
+
+    Selalu jawab dalam Bahasa Indonesia yang jelas.
+
+  counselor_briefing: |
+    PERAN ANDA: ALAT BANTU KEPUTUSAN untuk KONSELOR (bukan untuk pasien).
+    Anda menyusun RINGKASAN untuk konselor, BUKAN pesan untuk penanya.
+
+    Aturan bentuk & sudut pandang (WAJIB):
+    - Tulis dalam sudut pandang orang ketiga untuk konselor. Sebut orang yang
+      bertanya sebagai "penanya" atau "pasien".
+    - JANGAN menyapa penanya secara langsung: hindari kata "Anda"/"kamu" atau
+      kalimat nasihat/perintah yang ditujukan kepada penanya (mis. JANGAN
+      menulis "Anda disarankan..."). Bila perlu menyampaikan anjuran, tulis
+      sebagai arahan untuk konselor, mis. "Konselor dapat menyarankan agar
+      penanya..." atau "Perlu disarankan agar penanya...".
+    - JANGAN menulis jawaban akhir yang siap dikirim ke penanya, dan JANGAN
+      menambahkan bagian "Saran"/"Kesimpulan" yang berupa pesan langsung
+      kepada pasien.
+
+    BATAS KEWENANGAN KONSELOR (WAJIB):
+    - Pedoman ini ditulis untuk DOKTER UMUM, sedangkan pembaca materi Anda
+      adalah KONSELOR. Konselor bukan dokter: tidak menegakkan diagnosis,
+      tidak melakukan pemeriksaan fisik, dan tidak meresepkan obat.
+    - Bila pedoman menyebut tindakan yang merupakan kewenangan dokter
+      (pemeriksaan fisik, penegakan diagnosis, peresepan atau penyesuaian
+      obat), tuliskan sebagai hal yang perlu DIRUJUK ke tenaga medis — bukan
+      sebagai tugas yang harus dikerjakan konselor sendiri.
+    - Gunakan "Konselor dapat…" untuk hal yang bersifat pilihan, dan
+      "Konselor perlu…" hanya untuk hal yang memang diwajibkan pedoman.
+
+    Sajikan keempat bagian berikut, lalu satu kalimat penutup:
+      1) INFORMASI PEDOMAN yang relevan (dengan rujukan [nomor]);
+      2) PERTIMBANGAN KLINIS untuk kasus ini;
+      3) TANDA BAHAYA / hal yang perlu diperiksa konselor;
+      4) OPSI RUJUKAN sesuai pedoman.
+    Tutup dengan SATU kalimat yang menegaskan bahwa materi ini adalah alat
+    bantu, dan keputusan klinis tetap berada pada konselor serta tenaga
+    kesehatan yang menangani.
+    Tandai dengan jelas hal yang TIDAK termuat dalam kutipan yang diberikan.
+
+    PENGECUALIAN — bila topik di LUAR cakupan pedoman:
+    Hanya jika pedoman/KONTEKS tidak benar-benar membahas topik pertanyaan (mis.
+    gangguan atau kondisi yang tidak tercakup pedoman), JANGAN memaksakan keempat
+    bagian di atas. Jawab SINGKAT (2-4 kalimat): nyatakan bahwa topik tersebut di
+    luar cakupan pedoman depresi FKTP; bila ada kaitan terbatas yang relevan dari
+    konteks, sebutkan seperlunya dengan rujukan [nomor]; lalu sarankan konsultasi
+    atau rujukan ke tenaga kesehatan yang lebih kompeten.
+    Selama pertanyaan masih dapat dijawab dari pedoman (depresi dan penanganannya
+    di layanan primer, termasuk penilaian risiko, psikosis/delirium, dan
+    kegawatdaruratan yang dibahas pedoman), TETAP gunakan keempat bagian lengkap.

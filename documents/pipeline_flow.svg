@@ -1,0 +1,119 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="940" height="1150" viewBox="0 0 940 1150" font-family="Segoe UI, Arial, sans-serif">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#334155"/>
+    </marker>
+  </defs>
+
+  <rect width="940" height="1150" fill="#ffffff"/>
+  <text x="470" y="34" text-anchor="middle" font-size="22" font-weight="bold" fill="#0f172a">Depression RAG — pipeline at a glance</text>
+
+  <!-- ===== source ===== -->
+  <rect x="290" y="52" width="360" height="44" rx="10" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+  <text x="470" y="79" text-anchor="middle" font-size="15" fill="#0f172a">Kemenkes guideline PDF (FKTP 2017)</text>
+  <line x1="470" y1="96" x2="470" y2="122" stroke="#334155" stroke-width="2" marker-end="url(#arr)"/>
+
+  <!-- ===== PHASE 1 band ===== -->
+  <rect x="60" y="126" width="820" height="290" rx="14" fill="#f0fdf4" stroke="#047857" stroke-width="2"/>
+  <text x="84" y="154" font-size="15" font-weight="bold" fill="#047857">PHASE 1 — build &amp; select the retriever</text>
+
+  <rect x="120" y="168" width="330" height="52" rx="8" fill="#ffffff" stroke="#047857"/>
+  <text x="285" y="190" text-anchor="middle" font-size="13.5" fill="#0f172a">extract → clean → segment</text>
+  <text x="285" y="208" text-anchor="middle" font-size="12" fill="#475569">one character-offset coordinate system</text>
+
+  <rect x="490" y="168" width="330" height="52" rx="8" fill="#ffffff" stroke="#047857"/>
+  <text x="655" y="190" text-anchor="middle" font-size="13.5" fill="#0f172a">14 chunkings × 4 embedding models</text>
+  <text x="655" y="208" text-anchor="middle" font-size="12" fill="#475569">= 56 exact-search FAISS indexes</text>
+
+  <line x1="450" y1="194" x2="484" y2="194" stroke="#334155" stroke-width="2" marker-end="url(#arr)"/>
+
+  <rect x="120" y="248" width="330" height="52" rx="8" fill="#ffffff" stroke="#047857"/>
+  <text x="285" y="270" text-anchor="middle" font-size="13.5" fill="#0f172a">gold set: 124 questions · 32 passages</text>
+  <text x="285" y="288" text-anchor="middle" font-size="12" fill="#475569">from the source text — never from chunks</text>
+
+  <rect x="490" y="248" width="330" height="52" rx="8" fill="#ffffff" stroke="#047857"/>
+  <text x="655" y="270" text-anchor="middle" font-size="13.5" fill="#0f172a">frozen metric nDCG@5 · bootstrap CIs</text>
+  <text x="655" y="288" text-anchor="middle" font-size="12" fill="#475569">Holm-corrected tests · pre-stated tie-breakers</text>
+
+  <line x1="655" y1="220" x2="655" y2="242" stroke="#334155" stroke-width="2" marker-end="url(#arr)"/>
+  <line x1="450" y1="274" x2="484" y2="274" stroke="#334155" stroke-width="2" marker-end="url(#arr)"/>
+
+  <rect x="250" y="330" width="440" height="60" rx="8" fill="#d1fae5" stroke="#047857" stroke-width="2.5"/>
+  <text x="470" y="354" text-anchor="middle" font-size="14.5" font-weight="bold" fill="#065f46">SELECTED: structure-512 + multilingual-E5</text>
+  <text x="470" y="374" text-anchor="middle" font-size="12.5" fill="#065f46">nDCG@5 = 0.793 [0.741–0.840] · suicide-risk recall@5 = 1.00</text>
+  <line x1="655" y1="300" x2="655" y2="316" stroke="#334155" stroke-width="2"/>
+  <line x1="655" y1="316" x2="470" y2="316" stroke="#334155" stroke-width="2"/>
+  <line x1="470" y1="316" x2="470" y2="324" stroke="#334155" stroke-width="2" marker-end="url(#arr)"/>
+
+  <line x1="470" y1="416" x2="470" y2="444" stroke="#334155" stroke-width="2" marker-end="url(#arr)"/>
+
+  <!-- ===== PHASE 2 band ===== -->
+  <rect x="60" y="448" width="820" height="170" rx="14" fill="#f0fdf4" stroke="#047857" stroke-width="2"/>
+  <text x="84" y="476" font-size="15" font-weight="bold" fill="#047857">PHASE 2 — the deployed chatbot</text>
+
+  <rect x="120" y="492" width="330" height="52" rx="8" fill="#ffffff" stroke="#047857"/>
+  <text x="285" y="514" text-anchor="middle" font-size="13.5" fill="#0f172a">retriever (k=5) + Gemma-4-12B via vLLM</text>
+  <text x="285" y="532" text-anchor="middle" font-size="12" fill="#475569">2-stage risk screen · escalation-first banner</text>
+
+  <rect x="490" y="492" width="330" height="52" rx="8" fill="#d1fae5" stroke="#047857"/>
+  <text x="655" y="514" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#065f46">4-section cited BRIEFING for the counselor</text>
+  <text x="655" y="532" text-anchor="middle" font-size="12" fill="#065f46">never a patient-facing reply</text>
+
+  <line x1="450" y1="518" x2="484" y2="518" stroke="#334155" stroke-width="2" marker-end="url(#arr)"/>
+  <text x="120" y="596" font-size="12.5" fill="#475569">every interaction logged · whole instrument defined in one config file (configs/chatbot.yaml)</text>
+
+  <!-- ===== real questions (side input) ===== -->
+  <rect x="60" y="648" width="330" height="56" rx="8" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+  <text x="225" y="670" text-anchor="middle" font-size="13.5" fill="#0f172a">373 real Alodokter questions (anonymized)</text>
+  <text x="225" y="690" text-anchor="middle" font-size="12" fill="#475569">→ frozen sample of 50 (24 risk / 26 non-risk)</text>
+
+  <line x1="470" y1="618" x2="470" y2="648" stroke="#334155" stroke-width="2"/>
+  <line x1="390" y1="676" x2="470" y2="676" stroke="#334155" stroke-width="2"/>
+  <line x1="470" y1="648" x2="470" y2="712" stroke="#334155" stroke-width="2" marker-end="url(#arr)"/>
+
+  <!-- ===== EVALUATION band ===== -->
+  <rect x="60" y="716" width="820" height="290" rx="14" fill="#eff6ff" stroke="#1d4ed8" stroke-width="2"/>
+  <text x="84" y="744" font-size="15" font-weight="bold" fill="#1d4ed8">EVALUATION — three layers, three different claims</text>
+
+  <rect x="86" y="762" width="248" height="104" rx="8" fill="#ffffff" stroke="#1d4ed8"/>
+  <text x="210" y="784" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e3a8a">Layer 1 — automatic</text>
+  <text x="210" y="804" text-anchor="middle" font-size="12" fill="#334155">LLM-judge + RAGAS · all 50</text>
+  <text x="210" y="822" text-anchor="middle" font-size="12" fill="#334155">complete 0.99 · cited 49/50</text>
+  <text x="210" y="840" text-anchor="middle" font-size="12" fill="#334155">risk surfaced 23/24</text>
+  <text x="210" y="858" text-anchor="middle" font-size="11.5" fill="#64748b">"is the tool grounded &amp; safe?"</text>
+
+  <rect x="346" y="762" width="248" height="104" rx="8" fill="#ffffff" stroke="#1d4ed8"/>
+  <text x="470" y="784" text-anchor="middle" font-size="13" font-weight="bold" fill="#1e3a8a">Layer 2 — expert tool rating</text>
+  <text x="470" y="804" text-anchor="middle" font-size="12" fill="#334155">36 briefing packets</text>
+  <text x="470" y="822" text-anchor="middle" font-size="12" fill="#334155">2 psychologists · quality +</text>
+  <text x="470" y="840" text-anchor="middle" font-size="12" fill="#334155">safety + faithfulness rubric</text>
+  <text x="470" y="858" text-anchor="middle" font-size="11.5" fill="#64748b">"is the tool's output good?"</text>
+
+  <rect x="606" y="762" width="248" height="104" rx="8" fill="#fef3c7" stroke="#b45309" stroke-width="2"/>
+  <text x="730" y="784" text-anchor="middle" font-size="13" font-weight="bold" fill="#92400e">Layer 3 — with vs without</text>
+  <text x="730" y="804" text-anchor="middle" font-size="12" fill="#78350f">2 counselors · 24 matched pairs</text>
+  <text x="730" y="822" text-anchor="middle" font-size="12" fill="#78350f">counterbalanced crossover</text>
+  <text x="730" y="840" text-anchor="middle" font-size="12" fill="#78350f">rated BLIND by 2 psychologists</text>
+  <text x="730" y="858" text-anchor="middle" font-size="11.5" fill="#92400e">"does the tool help the human?"</text>
+
+  <text x="470" y="898" text-anchor="middle" font-size="12.5" fill="#475569">all draws frozen under one seed (20260628) · 16 shared items → inter-rater agreement · case bundles keep rater bias out of the comparison</text>
+
+  <rect x="250" y="920" width="440" height="56" rx="8" fill="#ffffff" stroke="#1d4ed8" stroke-dasharray="5 4"/>
+  <text x="470" y="943" text-anchor="middle" font-size="13" fill="#1e3a8a">pre-specified analysis: mixed model over the 24 pairs</text>
+  <text x="470" y="962" text-anchor="middle" font-size="12" fill="#475569">score ~ condition + block + counselor + rater + (1 | question)</text>
+
+  <line x1="210" y1="866" x2="210" y2="890" stroke="#334155" stroke-width="1.5"/>
+  <line x1="470" y1="866" x2="470" y2="914" stroke="#334155" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="730" y1="866" x2="730" y2="890" stroke="#334155" stroke-width="1.5"/>
+  <line x1="210" y1="890" x2="300" y2="912" stroke="#334155" stroke-width="1.5"/>
+  <line x1="730" y1="890" x2="640" y2="912" stroke="#334155" stroke-width="1.5"/>
+
+  <line x1="470" y1="1006" x2="470" y2="1034" stroke="#334155" stroke-width="2" marker-end="url(#arr)"/>
+
+  <!-- ===== conclusion ===== -->
+  <rect x="230" y="1038" width="480" height="58" rx="10" fill="#047857"/>
+  <text x="470" y="1062" text-anchor="middle" font-size="15" font-weight="bold" fill="#ffffff">Does the tool make the counselor better?</text>
+  <text x="470" y="1082" text-anchor="middle" font-size="12" fill="#d1fae5">the causal question only the blinded human study can answer</text>
+
+  <text x="470" y="1128" text-anchor="middle" font-size="11.5" fill="#94a3b8">reproducible end-to-end: one seed · frozen artifacts · run manifests · 76 tests · independent audit</text>
+</svg>

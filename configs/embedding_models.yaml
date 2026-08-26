@@ -1,0 +1,115 @@
+# =============================================================================
+# Embedding models + index settings for the retrieval comparison.
+#
+# Model details were checked against the HuggingFace model cards on 2026-06-29
+# (dims, pooling, prefixes, max sequence lengths — e.g. nomic's card gives
+# max_seq_len 8192).
+#
+# Prefix correctness matters: e5 and nomic are trained with asymmetric
+# query/passage prefixes and degrade silently without them. query_prefix is
+# applied to questions and doc_prefix to chunks at encode time (asserted by
+# tests/test_embedding_prefix.py).
+# =============================================================================
+
+run:
+  seed: 20260628
+  log_level: INFO
+
+embedding:
+  device: auto          # auto -> cuda if available, else cpu
+  batch_size: 64
+  normalize: true       # L2-normalize so inner product == cosine (FAISS IndexFlatIP)
+
+  models:
+    e5-large:
+      checkpoint: intfloat/multilingual-e5-large
+      backend: sentence-transformers     # ST handles tokenize + mean pool + normalize
+      pooling: mean
+      dim: 1024
+      query_prefix: "query: "            # verified from card
+      doc_prefix: "passage: "
+      max_seq_len: 512
+      trust_remote_code: false
+
+    indobert:
+      checkpoint: indobenchmark/indobert-base-p1
+      backend: transformers-mean         # raw BERT + explicit mean pooling (weak baseline)
+      pooling: mean
+      dim: 768
+      query_prefix: ""                   # no prefix
+      doc_prefix: ""
+      max_seq_len: 512
+      trust_remote_code: false
+
+    nomic-indonesian:
+      checkpoint: asmud/nomic-embed-indonesian
+      backend: sentence-transformers
+      pooling: mean
+      dim: 768
+      query_prefix: "search_query: "     # verified from card
+      doc_prefix: "search_document: "
+      max_seq_len: 8192                   # per the model card
+      trust_remote_code: true            # required by this finetune
+
+    minilm:
+      checkpoint: sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2
+      backend: sentence-transformers
+      pooling: mean
+      dim: 384
+      query_prefix: ""                   # no prefix
+      doc_prefix: ""
+      max_seq_len: 128                    # hard truncation point; truncation rate is logged per index
+      trust_remote_code: false
+
+    # Added 2026-07-12 as a post-selection robustness challenger: a second
+    # strong general-purpose multilingual retriever, so the e5-large win is not
+    # "best of a weak field". Details per the BAAI/bge-m3 model card: dense
+    # retrieval from the CLS vector (the ST pooling config in the repo applies
+    # it), NO query/passage instruction prefixes, 8192-token window.
+    bge-m3:
+      checkpoint: BAAI/bge-m3
+      backend: sentence-transformers
+      pooling: cls                       # from the model's own ST config
+      dim: 1024
+      query_prefix: ""                   # M3 uses no instruction prefixes (card)
+      doc_prefix: ""
+      max_seq_len: 8192
+      trust_remote_code: false
+
+# -----------------------------------------------------------------------------
+# INDEX: exact cosine via FAISS IndexFlatIP on normalized vectors.
+# Build one index per (chunk config_id x embedding model), keyed by index_id.
+# -----------------------------------------------------------------------------
+index:
+  type: flat            # exact IndexFlatIP (NOT hnsw/ivf - small corpus, removes variance)
+  metric: ip            # inner product (== cosine on normalized vectors)
+  models: [e5-large, indobert, nomic-indonesian, minilm, bge-m3]
+  chunk_configs: null   # null -> discover all <config_id>.jsonl in chunks_dir
+  # Multi-vector mode (OFF by default; also togglable per run via
+  # `cli_index --multi-vector`). When on, a chunk whose encoding exceeds the
+  # model's max_seq_len is embedded as several <=cap windows that all map to
+  # the same chunk_id (search deduplicates, keeping the best window score), so
+  # long atomic blocks are fully represented instead of clipped at the cap.
+  # Indexes built this way are written to separate "<config>__<model>__mv"
+  # directories - the single-vector indexes are never overwritten, and
+  # deleting an __mv directory fully retires the variant.
+  #
+  # STAYS false: a full run must produce the 70 single-vector indexes that the
+  # selection was scored on. The DEPLOYED index is the one exception and is NOT
+  # produced by a default run - configs/chatbot.yaml points at
+  # outputs/indexes/structure-512-0__e5-large__mv, which is built by one extra
+  # command:
+  #   python -m depression_rag.cli_index --models e5-large \
+  #       --configs structure-512-0 --multi-vector
+  # Rebuilding from scratch therefore takes two commands, not one (README §5).
+  multi_vector: false
+
+output:
+  chunks_dir: "outputs/chunks"          # input: per-config chunk files from the chunking run
+  index_dir: "outputs/indexes"          # <index_id>/index.faiss + ids.json + chunks.jsonl + meta.json
+  manifests_dir: "outputs/manifests"
+  logs_dir: "outputs/logs"
+  # jsonl only — see the note in configs/pipeline.yaml. The per-index chunk
+  # table is read by evaluation/retrieval.py and chatbot.py, both of which open
+  # chunks.jsonl; the parquet twin was never read. Dropped 2026-07-26.
+  formats: ["jsonl"]

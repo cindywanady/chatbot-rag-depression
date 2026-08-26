@@ -1,0 +1,35 @@
+# =============================================================================
+# Requirements for the CHUNKING PIPELINE (Phase 1: spec sections 2.2-2.3).
+#
+# Install into the project-local virtual environment (kept INSIDE chatbot_dep):
+#
+#     python -m venv .venv                 # (already created)
+#     ./.venv/bin/pip install -r requirements.txt
+#     ./.venv/bin/pip install -e .         # install this package (editable)
+#
+# Versions are pinned to exactly what the pipeline was developed and tested
+# against, so the thesis results are reproducible. A full transitive lock of
+# every sub-dependency is in requirements.lock.txt.
+#
+# NOTE: the tokenizer-only install pulls in transformers but NOT torch/tf -
+# we only use the fast tokenizer for token counting and char-offset mapping.
+# =============================================================================
+
+# --- PDF extraction + rasterization -----------------------------------------
+PyMuPDF==1.24.10
+
+# --- Reference tokenizer (token-based chunk sizing, spec 2.3 tokenizer note) -
+transformers==4.46.2
+tokenizers==0.20.3
+sentencepiece==0.2.0
+
+# --- Config loading ---------------------------------------------------------
+PyYAML==6.0.2
+
+# --- Output handling (chunk records) ----------------------------------------
+pandas==2.2.3
+pyarrow==17.0.0
+numpy==2.1.3
+
+# --- Testing (dev) ----------------------------------------------------------
+pytest==8.3.3

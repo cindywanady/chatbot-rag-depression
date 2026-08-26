@@ -1,0 +1,31 @@
+# Manual / judge-adjudicated content_type corrections.
+#
+# Applied AFTER the deterministic rule cascade (extraction/segmentation.py), keyed
+# by segment_id. An override wins over the rule label and `atomic` is recomputed,
+# so the structure chunker stays consistent. This is the layer that lets labels be
+# set by review rather than rules alone — edit/extend it and re-run chunking +
+# indexing to apply.
+#
+# Wired in by `segmentation.content_type_overrides` in configs/pipeline.yaml,
+# whose value is resolved relative to that file's directory. Because the key is
+# set there, this file MISSING is a hard error, not a silent fallback: without
+# it, 7 content_types and 6 atomic flags revert to the rule labels and every
+# chunk file changes. To run on the rules alone, set that key to `null`.
+#
+# Each entry: `segment_id: { content_type: <one of the 7>, source: <why> }`.
+# (A bare `segment_id: content_type` string also works; source is for audit.)
+#
+# Provenance: the entries below are the segments where two independent blind
+# LLM judges (Claude + GPT, prompted with configs/prompts/content_type_audit.md)
+# AGREED against the rule label in a 2026-07-01 audit. MI4_0040 is deliberately
+# NOT overridden — the judges disagreed on it, so it keeps the rule label
+# (`dosage`).
+
+overrides:
+  MI1_0001: { content_type: clinical_exposition, source: "judge-consensus 2026-07-01 (was somatic_symptoms; early-detection prose)" }
+  MI1_0010: { content_type: clinical_exposition, source: "judge-consensus 2026-07-01 (was somatic_symptoms; tiny fragment)" }
+  MI1_0017: { content_type: clinical_exposition, source: "judge-consensus 2026-07-01 (was risk_suicide; detection-method block under merged BUNUH DIRI heading)" }
+  MI4_0030: { content_type: clinical_exposition, source: "judge-consensus 2026-07-01 (was criteria; psychotic differential reminder, not depression criteria)" }
+  MI4_0035: { content_type: clinical_exposition, source: "judge-consensus 2026-07-01 (was dosage; child/adolescent presentation & management, drug name only)" }
+  MI4_0039: { content_type: clinical_exposition, source: "judge-consensus 2026-07-01 (was dosage; antidepressant classes/counselling, no dose)" }
+  MI7_0057: { content_type: clinical_exposition, source: "judge-consensus 2026-07-01 (was dosage; emergency kit / drug stock list)" }

@@ -1,0 +1,156 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="180mm" height="236.4mm" viewBox="0 0 1200 1576" font-family="Helvetica, Arial, 'Liberation Sans', sans-serif">
+<defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#454F5B"/></marker></defs>
+<rect width="1200" height="1576" fill="#FFFFFF"/>
+<rect x="24" y="24" width="1152" height="424" rx="10" fill="#F4F6F8" stroke="#C6CDD5" stroke-width="1.4"/>
+<text x="44" y="62" font-size="30" fill="#14181F" font-weight="bold" text-anchor="start">A</text>
+<text x="78" y="61" font-size="24" fill="#14181F" font-weight="bold" text-anchor="start">Retriever selection (RQ1)</text>
+<rect x="44" y="96" width="252" height="126" rx="7" fill="#FFFFFF" stroke="#5A6572" stroke-width="1.6"/>
+<text x="170.0" y="123" font-size="19" fill="#14181F" font-weight="bold" text-anchor="middle">Guideline corpus</text>
+<text x="170.0" y="145" font-size="17" fill="#454F5B" font-weight="normal" text-anchor="middle">Indonesian primary-care</text>
+<text x="170.0" y="166" font-size="17" fill="#454F5B" font-weight="normal" text-anchor="middle">mental-health guideline</text>
+<text x="170.0" y="187" font-size="17" fill="#454F5B" font-weight="normal" text-anchor="middle">(Ministry of Health, 2017)</text>
+<text x="170.0" y="208" font-size="17" fill="#454F5B" font-weight="normal" text-anchor="middle">5 of 9 units → 68 segments</text>
+<rect x="330" y="96" width="252" height="126" rx="7" fill="#FFFFFF" stroke="#5A6572" stroke-width="1.6"/>
+<text x="456.0" y="123" font-size="19" fill="#14181F" font-weight="bold" text-anchor="middle">Chunking</text>
+<text x="456.0" y="145" font-size="17" fill="#454F5B" font-weight="normal" text-anchor="middle">fixed · recursive · structure-</text>
+<text x="456.0" y="166" font-size="17" fill="#454F5B" font-weight="normal" text-anchor="middle">aware, 128/256/512 tokens,</text>
+<text x="456.0" y="187" font-size="17" fill="#454F5B" font-weight="normal" text-anchor="middle">overlap 0/64 → 14 configura-</text>
+<text x="456.0" y="208" font-size="17" fill="#454F5B" font-weight="normal" text-anchor="middle">tions, one reference tokenizer</text>
+<rect x="616" y="96" width="252" height="126" rx="7" fill="#FFFFFF" stroke="#5A6572" stroke-width="1.6"/>
+<text x="742.0" y="123" font-size="19" fill="#14181F" font-weight="bold" text-anchor="middle">Embedding</text>
+<text x="742.0" y="145" font-size="17" fill="#454F5B" font-weight="normal" text-anchor="middle">multilingual-E5-large,</text>
+<text x="742.0" y="166" font-size="17" fill="#454F5B" font-weight="normal" text-anchor="middle">Nomic-Indonesian, MiniLM,</text>
+<text x="742.0" y="187" font-size="17" fill="#454F5B" font-weight="normal" text-anchor="middle">IndoBERT (weak baseline)</text>
+<text x="742.0" y="208" font-size="17" fill="#454F5B" font-weight="normal" text-anchor="middle">→ 4 models</text>
+<rect x="902" y="96" width="252" height="126" rx="7" fill="#FFFFFF" stroke="#5A6572" stroke-width="1.6"/>
+<text x="1028.0" y="123" font-size="19" fill="#14181F" font-weight="bold" text-anchor="middle">Index</text>
+<text x="1028.0" y="145" font-size="17" fill="#454F5B" font-weight="normal" text-anchor="middle">56 exact-cosine FAISS</text>
+<text x="1028.0" y="166" font-size="17" fill="#454F5B" font-weight="normal" text-anchor="middle">indexes (14 × 4); exact</text>
+<text x="1028.0" y="187" font-size="17" fill="#454F5B" font-weight="normal" text-anchor="middle">search removes approxi-</text>
+<text x="1028.0" y="208" font-size="17" fill="#454F5B" font-weight="normal" text-anchor="middle">mation variance</text>
+<path d="M 296 159.0 L 330 159.0" fill="none" stroke="#454F5B" stroke-width="1.9" stroke-linejoin="round" marker-end="url(#ah)"/>
+<path d="M 582 159.0 L 616 159.0" fill="none" stroke="#454F5B" stroke-width="1.9" stroke-linejoin="round" marker-end="url(#ah)"/>
+<path d="M 868 159.0 L 902 159.0" fill="none" stroke="#454F5B" stroke-width="1.9" stroke-linejoin="round" marker-end="url(#ah)"/>
+<rect x="44" y="268" width="520" height="140" rx="7" fill="#FFFFFF" stroke="#5A6572" stroke-width="1.6"/>
+<text x="304.0" y="295" font-size="19" fill="#14181F" font-weight="bold" text-anchor="middle">Gold standard</text>
+<text x="304.0" y="317" font-size="17" fill="#454F5B" font-weight="normal" text-anchor="middle">31 curated gold passages over 12 clinical concepts · 121 Indonesian</text>
+<text x="304.0" y="338" font-size="17" fill="#454F5B" font-weight="normal" text-anchor="middle">questions generated from the source text, never from the chunkings</text>
+<text x="304.0" y="359" font-size="17" fill="#454F5B" font-weight="normal" text-anchor="middle">under test · 8 clinical types, 3 difficulty levels · relevance frozen</text>
+<text x="304.0" y="380" font-size="17" fill="#454F5B" font-weight="normal" text-anchor="middle">before scoring: span overlap ≥ 50% of the shorter span</text>
+<rect x="598" y="268" width="270" height="140" rx="7" fill="#FFFFFF" stroke="#5A6572" stroke-width="1.6"/>
+<text x="733.0" y="295" font-size="19" fill="#14181F" font-weight="bold" text-anchor="middle">Scoring</text>
+<text x="733.0" y="317" font-size="17" fill="#454F5B" font-weight="normal" text-anchor="middle">nDCG@5 (primary,</text>
+<text x="733.0" y="338" font-size="17" fill="#454F5B" font-weight="normal" text-anchor="middle">frozen a priori)</text>
+<text x="733.0" y="359" font-size="17" fill="#454F5B" font-weight="normal" text-anchor="middle">10,000-resample</text>
+<text x="733.0" y="380" font-size="17" fill="#454F5B" font-weight="normal" text-anchor="middle">bootstrap CIs · paired</text>
+<text x="733.0" y="401" font-size="17" fill="#454F5B" font-weight="normal" text-anchor="middle">Wilcoxon, Holm-corrected</text>
+<rect x="902" y="268" width="252" height="140" rx="7" fill="#E4EBF2" stroke="#2A557B" stroke-width="1.6"/>
+<text x="1028.0" y="295" font-size="19" fill="#14181F" font-weight="bold" text-anchor="middle">Selected</text>
+<text x="1028.0" y="317" font-size="17" fill="#454F5B" font-weight="normal" text-anchor="middle">structure-aware 512-token</text>
+<text x="1028.0" y="338" font-size="17" fill="#454F5B" font-weight="normal" text-anchor="middle">chunks + multilingual-E5</text>
+<text x="1028.0" y="359" font-size="17" fill="#454F5B" font-weight="normal" text-anchor="middle">nDCG@5 = 0.798</text>
+<text x="1028.0" y="380" font-size="17" fill="#454F5B" font-weight="normal" text-anchor="middle">(95% CI 0.747–0.846)</text>
+<text x="1028.0" y="401" font-size="17" fill="#454F5B" font-weight="normal" text-anchor="middle">suicide-risk recall@5 = 1.000</text>
+<path d="M 1028 222 L 1028 244 L 733 244 L 733 268" fill="none" stroke="#454F5B" stroke-width="1.9" stroke-linejoin="round" marker-end="url(#ah)"/>
+<path d="M 564 338.0 L 598 338.0" fill="none" stroke="#454F5B" stroke-width="1.9" stroke-linejoin="round" marker-end="url(#ah)"/>
+<path d="M 868 338.0 L 902 338.0" fill="none" stroke="#454F5B" stroke-width="1.9" stroke-linejoin="round" marker-end="url(#ah)"/>
+<text x="1154" y="433" font-size="16" fill="#454F5B" font-weight="normal" text-anchor="end" font-style="italic">tie-breakers pre-stated before scoring: robustness across question types → index size → build cost</text>
+<rect x="24" y="472" width="1152" height="384" rx="10" fill="#F4F6F8" stroke="#C6CDD5" stroke-width="1.4"/>
+<text x="44" y="510" font-size="30" fill="#14181F" font-weight="bold" text-anchor="start">B</text>
+<text x="78" y="509" font-size="24" fill="#14181F" font-weight="bold" text-anchor="start">Deployed system</text>
+<rect x="44" y="544" width="252" height="126" rx="7" fill="#EDF0F3" stroke="#5A6572" stroke-width="1.6"/>
+<text x="170.0" y="571" font-size="19" fill="#14181F" font-weight="bold" text-anchor="middle">Counselor's question</text>
+<text x="170.0" y="593" font-size="17" fill="#454F5B" font-weight="normal" text-anchor="middle">a help-seeker's message,</text>
+<text x="170.0" y="614" font-size="17" fill="#454F5B" font-weight="normal" text-anchor="middle">put into the counselor's</text>
+<text x="170.0" y="635" font-size="17" fill="#454F5B" font-weight="normal" text-anchor="middle">own words</text>
+<rect x="330" y="544" width="252" height="126" rx="7" fill="#FFFFFF" stroke="#5A6572" stroke-width="1.6"/>
+<text x="456.0" y="571" font-size="19" fill="#14181F" font-weight="bold" text-anchor="middle">Two-stage risk screen</text>
+<text x="456.0" y="593" font-size="17" fill="#454F5B" font-weight="normal" text-anchor="middle">58-term keyword pre-screen;</text>
+<text x="456.0" y="614" font-size="17" fill="#454F5B" font-weight="normal" text-anchor="middle">on a miss, an LLM classifier</text>
+<text x="456.0" y="635" font-size="17" fill="#454F5B" font-weight="normal" text-anchor="middle">issues a second verdict</text>
+<rect x="616" y="544" width="252" height="126" rx="7" fill="#FFFFFF" stroke="#5A6572" stroke-width="1.6"/>
+<text x="742.0" y="571" font-size="19" fill="#14181F" font-weight="bold" text-anchor="middle">Retrieval, k = 5</text>
+<text x="742.0" y="593" font-size="17" fill="#454F5B" font-weight="normal" text-anchor="middle">selected index, multi-vector</text>
+<text x="742.0" y="614" font-size="17" fill="#454F5B" font-weight="normal" text-anchor="middle">build (90 chunks, 96 vectors)</text>
+<rect x="902" y="544" width="252" height="126" rx="7" fill="#FFFFFF" stroke="#5A6572" stroke-width="1.6"/>
+<text x="1028.0" y="571" font-size="19" fill="#14181F" font-weight="bold" text-anchor="middle">Generation</text>
+<text x="1028.0" y="593" font-size="17" fill="#454F5B" font-weight="normal" text-anchor="middle">Gemma-4-12B-it via vLLM</text>
+<text x="1028.0" y="614" font-size="17" fill="#454F5B" font-weight="normal" text-anchor="middle">temperature 0.2, top-p 0.9</text>
+<text x="1028.0" y="635" font-size="17" fill="#454F5B" font-weight="normal" text-anchor="middle">≤ 1200 new tokens</text>
+<path d="M 296 607.0 L 330 607.0" fill="none" stroke="#454F5B" stroke-width="1.9" stroke-linejoin="round" marker-end="url(#ah)"/>
+<path d="M 582 607.0 L 616 607.0" fill="none" stroke="#454F5B" stroke-width="1.9" stroke-linejoin="round" marker-end="url(#ah)"/>
+<path d="M 868 607.0 L 902 607.0" fill="none" stroke="#454F5B" stroke-width="1.9" stroke-linejoin="round" marker-end="url(#ah)"/>
+<rect x="44" y="714" width="520" height="118" rx="7" fill="#F8EAE3" stroke="#9C4A2A" stroke-width="1.6"/>
+<text x="304.0" y="741" font-size="19" fill="#14181F" font-weight="bold" text-anchor="middle">If flagged: fixed escalation banner</text>
+<text x="304.0" y="763" font-size="17" fill="#454F5B" font-weight="normal" text-anchor="middle">emergency department or community health centre first, then the</text>
+<text x="304.0" y="784" font-size="17" fill="#454F5B" font-weight="normal" text-anchor="middle">national crisis line · not model-generated, identical on every flagged</text>
+<text x="304.0" y="805" font-size="17" fill="#454F5B" font-weight="normal" text-anchor="middle">case, and placed ahead of the briefing</text>
+<rect x="616" y="714" width="252" height="118" rx="7" fill="#E4EBF2" stroke="#2A557B" stroke-width="1.6"/>
+<text x="742.0" y="741" font-size="19" fill="#14181F" font-weight="bold" text-anchor="middle">Counselor briefing</text>
+<text x="742.0" y="763" font-size="17" fill="#454F5B" font-weight="normal" text-anchor="middle">four sections with</text>
+<text x="742.0" y="784" font-size="17" fill="#454F5B" font-weight="normal" text-anchor="middle">bracketed citations to the</text>
+<text x="742.0" y="805" font-size="17" fill="#454F5B" font-weight="normal" text-anchor="middle">five retrieved passages</text>
+<rect x="902" y="714" width="252" height="118" rx="7" fill="#FFFFFF" stroke="#8A939D" stroke-width="1.6" stroke-dasharray="7 5"/>
+<text x="1028.0" y="741" font-size="19" fill="#454F5B" font-weight="bold" text-anchor="middle">Patient-facing reply</text>
+<text x="1028.0" y="763" font-size="17" fill="#454F5B" font-weight="normal" text-anchor="middle">written by the counselor;</text>
+<text x="1028.0" y="784" font-size="17" fill="#454F5B" font-weight="normal" text-anchor="middle">the system never drafts it</text>
+<path d="M 456 670 L 456 692 L 304 692 L 304 714" fill="none" stroke="#454F5B" stroke-width="1.9" stroke-linejoin="round" marker-end="url(#ah)"/>
+<path d="M 1028 670 L 1028 692 L 742 692 L 742 714" fill="none" stroke="#454F5B" stroke-width="1.9" stroke-linejoin="round" marker-end="url(#ah)"/>
+<path d="M 564 773.0 L 616 773.0" fill="none" stroke="#454F5B" stroke-width="1.9" stroke-linejoin="round" marker-end="url(#ah)"/>
+<path d="M 868 773.0 L 902 773.0" fill="none" stroke="#454F5B" stroke-width="1.9" stroke-linejoin="round" stroke-dasharray="7 5" marker-end="url(#ah)"/>
+<text x="410" y="686" font-size="16" fill="#454F5B" font-weight="normal" text-anchor="end" font-style="italic">risk</text>
+<rect x="24" y="880" width="1152" height="606" rx="10" fill="#F4F6F8" stroke="#C6CDD5" stroke-width="1.4"/>
+<text x="44" y="918" font-size="30" fill="#14181F" font-weight="bold" text-anchor="start">C</text>
+<text x="78" y="917" font-size="24" fill="#14181F" font-weight="bold" text-anchor="start">Three-layer evaluation</text>
+<rect x="44" y="952" width="1110" height="100" rx="7" fill="#FFFFFF" stroke="#5A6572" stroke-width="1.6"/>
+<text x="599.0" y="979" font-size="19" fill="#14181F" font-weight="bold" text-anchor="middle">Real-world question set</text>
+<text x="599.0" y="1001" font-size="17" fill="#454F5B" font-weight="normal" text-anchor="middle">373 public depression threads from an Indonesian online health forum → frozen random sample of 50</text>
+<text x="599.0" y="1022" font-size="17" fill="#454F5B" font-weight="normal" text-anchor="middle">24 risk-flagged / 26 non-risk · two length-balanced blocks of 25 · de-identified, questions kept verbatim</text>
+<rect x="44" y="1122" width="348" height="214" rx="7" fill="#FFFFFF" stroke="#5A6572" stroke-width="1.6"/>
+<text x="218.0" y="1149" font-size="19" fill="#14181F" font-weight="bold" text-anchor="middle">Layer 1 — automatic</text>
+<text x="218.0" y="1171" font-size="17" fill="#454F5B" font-weight="normal" text-anchor="middle">all 50 briefings, no human</text>
+<text x="218.0" y="1192" font-size="17" fill="#454F5B" font-weight="normal" text-anchor="middle"></text>
+<text x="218.0" y="1213" font-size="17" fill="#454F5B" font-weight="normal" text-anchor="middle">custom judge (Qwen3, a different</text>
+<text x="218.0" y="1234" font-size="17" fill="#454F5B" font-weight="normal" text-anchor="middle">model family from the generator)</text>
+<text x="218.0" y="1255" font-size="17" fill="#454F5B" font-weight="normal" text-anchor="middle">+ RAGAS, sharing no code</text>
+<text x="218.0" y="1276" font-size="17" fill="#454F5B" font-weight="normal" text-anchor="middle"></text>
+<text x="218.0" y="1297" font-size="17" fill="#454F5B" font-weight="normal" text-anchor="middle">faithfulness · structural complete-</text>
+<text x="218.0" y="1318" font-size="17" fill="#454F5B" font-weight="normal" text-anchor="middle">ness · citation presence · risk surfacing</text>
+<rect x="426" y="1122" width="348" height="214" rx="7" fill="#FFFFFF" stroke="#5A6572" stroke-width="1.6"/>
+<text x="600.0" y="1149" font-size="19" fill="#14181F" font-weight="bold" text-anchor="middle">Layer 2 — expert rating</text>
+<text x="600.0" y="1171" font-size="17" fill="#454F5B" font-weight="normal" text-anchor="middle">36 briefings, 2 licensed psychologists</text>
+<text x="600.0" y="1192" font-size="17" fill="#454F5B" font-weight="normal" text-anchor="middle"></text>
+<text x="600.0" y="1213" font-size="17" fill="#454F5B" font-weight="normal" text-anchor="middle">the 24 counselor-study cases ∪ all 24</text>
+<text x="600.0" y="1234" font-size="17" fill="#454F5B" font-weight="normal" text-anchor="middle">risk cases, overlapping in 12</text>
+<text x="600.0" y="1255" font-size="17" fill="#454F5B" font-weight="normal" text-anchor="middle"></text>
+<text x="600.0" y="1276" font-size="17" fill="#454F5B" font-weight="normal" text-anchor="middle">clinical quality · safety items and a</text>
+<text x="600.0" y="1297" font-size="17" fill="#454F5B" font-weight="normal" text-anchor="middle">binary gate · groundedness against the</text>
+<text x="600.0" y="1318" font-size="17" fill="#454F5B" font-weight="normal" text-anchor="middle">exact five passages the model received</text>
+<rect x="808" y="1122" width="348" height="214" rx="7" fill="#FFFFFF" stroke="#5A6572" stroke-width="1.6"/>
+<text x="982.0" y="1149" font-size="19" fill="#14181F" font-weight="bold" text-anchor="middle">Layer 3 — counselor study</text>
+<text x="982.0" y="1171" font-size="17" fill="#454F5B" font-weight="normal" text-anchor="middle">2 counselors × 24 cases, answered</text>
+<text x="982.0" y="1192" font-size="17" fill="#454F5B" font-weight="normal" text-anchor="middle">with and without the tool in a counter-</text>
+<text x="982.0" y="1213" font-size="17" fill="#454F5B" font-weight="normal" text-anchor="middle">balanced crossover → 24 matched pairs</text>
+<text x="982.0" y="1234" font-size="17" fill="#454F5B" font-weight="normal" text-anchor="middle">(48 answers)</text>
+<text x="982.0" y="1255" font-size="17" fill="#454F5B" font-weight="normal" text-anchor="middle"></text>
+<text x="982.0" y="1276" font-size="17" fill="#454F5B" font-weight="normal" text-anchor="middle">rated blind by the same 2 psychologists;</text>
+<text x="982.0" y="1297" font-size="17" fill="#454F5B" font-weight="normal" text-anchor="middle">condition, author and order withheld</text>
+<path d="M 599 1052 L 599 1092" fill="none" stroke="#454F5B" stroke-width="1.9" stroke-linejoin="round"/>
+<path d="M 219 1092 L 982 1092" fill="none" stroke="#454F5B" stroke-width="1.9" stroke-linejoin="round"/>
+<path d="M 219 1092 L 219 1122" fill="none" stroke="#454F5B" stroke-width="1.9" stroke-linejoin="round" marker-end="url(#ah)"/>
+<path d="M 599 1092 L 599 1122" fill="none" stroke="#454F5B" stroke-width="1.9" stroke-linejoin="round" marker-end="url(#ah)"/>
+<path d="M 982 1092 L 982 1122" fill="none" stroke="#454F5B" stroke-width="1.9" stroke-linejoin="round" marker-end="url(#ah)"/>
+<rect x="44" y="1382" width="1110" height="84" rx="7" fill="#E4EBF2" stroke="#2A557B" stroke-width="1.6"/>
+<text x="599.0" y="1409" font-size="19" fill="#14181F" font-weight="bold" text-anchor="middle">Analysis</text>
+<text x="599.0" y="1431" font-size="17" fill="#454F5B" font-weight="normal" text-anchor="middle">primary endpoint: score ~ condition + block + counselor + rater + (1 | question) over the 24 pairs · Holm-corrected secondary family</text>
+<text x="599.0" y="1452" font-size="17" fill="#454F5B" font-weight="normal" text-anchor="middle">ICC(2,1) and weighted κ on 16 double-rated items · safety gate reported as a failure rate, never averaged into a scale</text>
+<path d="M 219 1336 L 219 1358" fill="none" stroke="#454F5B" stroke-width="1.9" stroke-linejoin="round"/>
+<path d="M 599 1336 L 599 1358" fill="none" stroke="#454F5B" stroke-width="1.9" stroke-linejoin="round"/>
+<path d="M 982 1336 L 982 1358" fill="none" stroke="#454F5B" stroke-width="1.9" stroke-linejoin="round"/>
+<path d="M 219 1358 L 982 1358" fill="none" stroke="#454F5B" stroke-width="1.9" stroke-linejoin="round"/>
+<path d="M 599 1358 L 599 1382" fill="none" stroke="#454F5B" stroke-width="1.9" stroke-linejoin="round" marker-end="url(#ah)"/>
+<rect x="24" y="1502" width="1152" height="50" rx="7" fill="#FFFFFF" stroke="#C6CDD5" stroke-width="1.4"/>
+<text x="44" y="1524" font-size="16" fill="#14181F" font-weight="bold" text-anchor="start">Frozen before data collection.</text>
+<text x="296" y="1524" font-size="16" fill="#454F5B" font-weight="normal" text-anchor="start">The case sample, the assignment of cases to conditions, the split of rating work between the two</text>
+<text x="44" y="1543" font-size="16" fill="#454F5B" font-weight="normal" text-anchor="start">psychologists, the form versions and the blind response codes were all drawn under one seed (20260628) and written to a checksummed assignment file.</text>
+</svg>

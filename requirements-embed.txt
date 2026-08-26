@@ -1,0 +1,18 @@
+# =============================================================================
+# Phase 2 dependencies: embedding + indexing (build_spec.md §2.4).
+#
+# Install ON TOP of requirements.txt:
+#     ./.venv/bin/pip install -r requirements-embed.txt
+#
+# torch below is the default Linux wheel (CUDA-enabled; verified on an NVIDIA
+# A40). For a CPU-only host install torch from the CPU index instead:
+#     pip install torch==2.12.1 --index-url https://download.pytorch.org/whl/cpu
+#
+# Models (e5-large, indobert, nomic-indonesian, minilm) download on first use
+# into the in-project ./.hf_cache. nomic requires trust_remote_code + einops.
+# =============================================================================
+
+torch==2.12.1
+sentence-transformers==3.4.1
+faiss-cpu==1.14.3
+einops==0.8.2

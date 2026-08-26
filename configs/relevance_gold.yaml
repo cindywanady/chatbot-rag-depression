@@ -1,0 +1,17 @@
+# Sensitivity variant of configs/relevance.yaml — DENOM = gold (DPR-style).
+#
+# Identical to the frozen relevance config EXCEPT the overlap denominator: here a
+# chunk is relevant iff overlap(chunk, gold) / |gold| >= 0.5, i.e. it covers at
+# least half of the gold passage span — the answer-containment convention used
+# by DPR-style evaluations.
+#
+# Used only by scripts/retrieval_sensitivity.py to confirm the SELECTION is robust
+# to the denominator choice. The primary results still use configs/relevance.yaml
+# (denom: shorter).
+
+relevance:
+  denom: gold
+  min_overlap_frac: 0.5
+  k_values: [1, 3, 5, 10]
+  primary_metric: ndcg@5
+  graded: false

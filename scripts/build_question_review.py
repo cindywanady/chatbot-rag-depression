@@ -1,0 +1,178 @@
+#!/usr/bin/env python
+"""Build the Step-3 human-review worksheet for the gold question set.
+
+Step 3 of the gold-set chain (`documents/qa_generation_summary.md` §1) is the
+human validation of the LLM-drafted questions. The previous worksheet grouped by
+`question_type` and did not include the passage text, so every one of the 124
+checks needed a manual lookup — and nothing turned a completed worksheet back
+into `questions_gold.jsonl`, which is why the shipped gold set is byte-identical
+to the candidate draft with all 124 boxes unticked.
+
+This worksheet is organised for the judgement actually being made — *is this
+question answerable from the passage it cites, and is the reference answer right?*
+— so it groups BY GOLD PASSAGE and quotes the passage text inline. 32 passages,
+median 4 questions each, ~48k chars of source text in total.
+
+Every question appears exactly ONCE: single-passage questions under their
+passage, multi-hop questions in their own section with all cited passages quoted
+together. Each block round-trips every field of the record, so an edit here is a
+complete edit.
+
+Mark each question by changing its box:
+
+    - [x]   accept as written
+    - [e]   edited — change the Q:/A:/TYPE:/DIFFICULTY:/PASSAGES: lines in place
+    - [-]   drop from the gold set
+    - [ ]   not yet reviewed  (convert_question_review.py refuses to run while
+            any of these remain, so a half-done review cannot become "validated")
+
+    ./.venv/bin/python scripts/build_question_review.py
+    ./.venv/bin/python scripts/convert_question_review.py          # dry run
+    ./.venv/bin/python scripts/convert_question_review.py --write
+
+Refuses to overwrite an existing worksheet: regenerating would silently discard
+review work in progress.
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+from pathlib import Path
+
+from depression_rag.config import load_pipeline_config
+from depression_rag.evaluation import build_gold_passages, load_questions
+
+ROOT = Path(__file__).resolve().parents[1]
+DERIVED = ROOT / "data" / "derived"
+
+ACCEPT, EDIT, DROP, TODO = "x", "e", "-", " "
+
+
+def _block(q: dict) -> list[str]:
+    """One question, round-tripping every field convert_question_review.py reads."""
+    return [
+        f"- [ ] **{q['question_id']}**",
+        f"      TYPE: {q['question_type']}",
+        f"      DIFFICULTY: {q['difficulty']}",
+        f"      PASSAGES: {', '.join(q['passage_ids'])}",
+        f"      Q: {q['question']}",
+        f"      A: {q['reference_answer']}",
+        "      NOTE: ",
+        "",
+    ]
+
+
+def _passage_header(p, n_questions: int, offset: int) -> list[str]:
+    """Header for one passage. Page numbers are PRINTED pages; the viewer page is
+    printed + printed_offset, and reviewers open the viewer — so print both, or
+    every cross-check against the PDF lands on the wrong page."""
+    def rng(a, b, add=0):
+        return f"{a + add}" if a == b else f"{a + add}–{b + add}"
+    pages = (f"hal. {rng(p.page_start, p.page_end)} "
+             f"(PDF viewer {rng(p.page_start, p.page_end, offset)})")
+    return [
+        f"## `{p.passage_id}` — {p.concept}",
+        "",
+        f"*{p.heading_path} · {pages} · {p.n_chars} chars · "
+        f"chars [{p.char_start}, {p.char_end}) · {n_questions} question(s)*",
+        "",
+        "> " + p.text.strip().replace("\n", "\n> "),
+        "",
+    ]
+
+
+def main(argv: list[str] | None = None) -> int:
+    ap = argparse.ArgumentParser(description=__doc__)
+    ap.add_argument("--questions", default=str(DERIVED / "questions_gold.jsonl"))
+    ap.add_argument("--out", default=str(ROOT / "outputs" / "analysis" / "question_review_worksheet.md"))
+    ap.add_argument("--force", action="store_true",
+                    help="overwrite an existing worksheet (DISCARDS review progress)")
+    args = ap.parse_args(argv)
+
+    out = Path(args.out)
+    if out.exists() and not args.force:
+        raise SystemExit(
+            f"{out} already exists — refusing to overwrite.\n"
+            "Regenerating would discard any review already recorded in it. "
+            "Pass --force only if you mean to start the review over."
+        )
+
+    offset = load_pipeline_config(ROOT / "configs" / "pipeline.yaml").source.printed_offset
+    gp = build_gold_passages(ROOT / "configs" / "gold_passages.yaml",
+                             DERIVED / "segments.jsonl", DERIVED / "cleaned_text.txt")
+    passages = {p.passage_id: p for p in gp.passages}
+    questions = load_questions(args.questions)
+
+    single = [q for q in questions if len(q["passage_ids"]) == 1]
+    multi = [q for q in questions if len(q["passage_ids"]) > 1]
+    by_passage: dict[str, list[dict]] = {}
+    for q in single:
+        by_passage.setdefault(q["passage_ids"][0], []).append(q)
+
+    lines = [
+        "# Step-3 human review — gold question set",
+        "",
+        f"*{len(questions)} questions drawn from {len(passages)} gold passages "
+        f"({len(single)} single-passage, {len(multi)} multi-hop). Generated by "
+        "`scripts/build_question_review.py` from "
+        f"`{Path(args.questions).relative_to(ROOT) if Path(args.questions).is_relative_to(ROOT) else args.questions}`.*",
+        "",
+        "For each question decide: **(1)** is it answerable from the passage(s) it "
+        "cites, using only the quoted text? **(2)** is the reference answer correct "
+        "against that text? **(3)** are the type and difficulty right?",
+        "",
+        "Mark every box — `[x]` accept · `[e]` edited (change the lines in place) · "
+        "`[-]` drop. `scripts/convert_question_review.py` refuses to run while any "
+        "`[ ]` remain, then rebuilds the gold set and records this worksheet's "
+        "checksum beside it.",
+        "",
+        "> The passage text below is the **only** evidence a question may rely on. "
+        "If answering needs knowledge that is not quoted here, that is a finding — "
+        "mark it `[e]` or `[-]` and say why in NOTE.",
+        "",
+        f"> **Page numbers are PRINTED pages** (the number on the paper), not PDF "
+        f"viewer positions: `viewer page = printed + {offset}` "
+        f"(`configs/pipeline.yaml → source.printed_offset`). Each heading gives "
+        f"both, so open the viewer page. Looking up the printed number directly "
+        f"lands you {offset} pages early.",
+        "",
+        "---",
+        "",
+    ]
+
+    for pid in sorted(by_passage, key=lambda i: (passages[i].source_unit, i)):
+        lines += _passage_header(passages[pid], len(by_passage[pid]), offset)
+        for q in sorted(by_passage[pid], key=lambda q: q["question_id"]):
+            lines += _block(q)
+        lines += ["---", ""]
+
+    if multi:
+        lines += [
+            "# Multi-hop questions",
+            "",
+            f"*{len(multi)} questions that require more than one passage. Each is "
+            "listed once, with every passage it cites quoted beneath it. The check "
+            "is stricter: the answer must need **all** of them.*",
+            "",
+        ]
+        for q in sorted(multi, key=lambda q: q["question_id"]):
+            lines += _block(q)
+            for pid in q["passage_ids"]:
+                p = passages[pid]
+                lines += [f"      *cites `{pid}` — {p.concept} · {p.heading_path}*", ""]
+                lines += ["      > " + p.text.strip().replace("\n", "\n      > "), ""]
+            lines += ["---", ""]
+
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    print(f"wrote {out}")
+    print(f"  {len(questions)} questions · {len(by_passage)} passage sections · "
+          f"{len(multi)} multi-hop")
+    print(f"  {sum(passages[p].n_chars for p in by_passage):,} chars of passage text inline")
+    print("\nnext: review it, then ./.venv/bin/python scripts/convert_question_review.py")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
