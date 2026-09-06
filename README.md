@@ -1,5 +1,44 @@
 # Depression RAG — a counselor decision-support chatbot
 
+Code and configuration for the system and evaluation reported in:
+
+> Wanady C. *Counselor-Facing Retrieval-Augmented Generation Chatbot Grounded in
+> an Indonesian Ministry of Health Depression Module: Development and Multistage
+> Evaluation Study.* Master's thesis, Monash University Indonesia, 2026.
+
+## What is and is not in this repository
+
+**This repository holds code and configuration only. It contains no participant
+data.** Counselor and psychologist responses, the study question set, and the
+completed rating workbooks are not published here. The study questions were
+de-identified but are not anonymous, and participants consented to their data
+being held with access limited to the research team.
+
+Two further sources are cited rather than redistributed: the Ministry of Health
+guideline module, which is a third-party publication, and the health-forum
+question corpus.
+
+Anonymised, aggregate results supporting the thesis are in its Multimedia
+Appendices.
+
+## Where the thesis maps onto this code
+
+| Thesis section | Code |
+|---|---|
+| 2.3 Data sources and preparation | `scripts/run_chunking.py`, `scripts/build_gold_passages.py`, `configs/pipeline.yaml` |
+| 2.4 Retrieval development and selection (RQ1) | `scripts/run_indexing.py`, `scripts/run_retrieval_eval.py`, `scripts/declare_selection.py`, `configs/embedding_models.yaml` |
+| 2.5 Deployed chatbot | `scripts/chatbot_app.py`, `src/depression_rag/chatbot.py`, `configs/chatbot.yaml` |
+| 2.5.2 Safety architecture | `src/depression_rag/`, `configs/chatbot.yaml` |
+| 2.6.1 Automatic briefing evaluation | `scripts/judge_study_answers.py`, `scripts/ragas_eval.py` |
+| 2.6.2 Safety evaluation | `scripts/judge_study_answers.py`, `scripts/audit_risk_verdicts.py` |
+| 2.6.4 Counselor-response analysis | `scripts/analyze_study.py`, `scripts/analyze_counselor_forms.py` |
+| Multimedia Appendix 1 (prompts) | `configs/prompts/`, `configs/chatbot.yaml`, `scripts/judge_study_answers.py` |
+
+Models and versions used are named in the thesis Methods and pinned in
+`configs/embedding_models.yaml` and `configs/chatbot.yaml`.
+
+---
+
 A RAG chatbot that supports non-specialist counselors handling depression
 cases, grounded exclusively in the Indonesian Ministry of Health primary-care
 mental-health guideline. The pipeline has two phases:

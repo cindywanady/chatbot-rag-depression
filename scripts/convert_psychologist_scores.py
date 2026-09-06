@@ -31,8 +31,15 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-XLSX_DIR = ROOT / "outputs/evaluation/study_kit/02_PSIKOLOG"
-# filename -> the rater who actually SCORED it. `Psikolog_1_lanjutan.xlsx` is the
+XLSX_DIR = ROOT / "outputs/evaluation/evaluation_form_result"
+# The RETURNED books, not `study_kit/02_PSIKOLOG` — that directory holds the blank
+# templates that were handed out, and reading it produces a full set of rows with
+# every score column empty. It did: until 2026-08-31 the default pointed there, so
+# p1_scores.csv/p2_scores.csv carried 44 and 56 rows in which only `rater`, the id
+# column and the `_not_rated` flags were populated, and `bagian0_risiko` — the
+# BAGIAN 0 danger-sign item the RQ2b comparison needs — was empty for both raters.
+# Pass --xlsx-dir to read a different set.
+# filename -> the rater who actually SCORED it. `Psikolog_1_lanjutan_Result.xlsx` is the
 # --topup book: the case set drawn for psychologist_2, rated by psychologist_1 when
 # only one psychologist is recruited. It is labelled psychologist_1 because that is
 # who produced the judgements — labelling it psychologist_2 would invent a second
@@ -40,9 +47,9 @@ XLSX_DIR = ROOT / "outputs/evaluation/study_kit/02_PSIKOLOG"
 # estimate that does not exist. Its case_ids and response_ids are disjoint from
 # book 1, so the rows concatenate without collision.
 WORKBOOKS = {
-    "Psikolog_1.xlsx": "psychologist_1",
-    "Psikolog_1_lanjutan.xlsx": "psychologist_1",
-    "Psikolog_2.xlsx": "psychologist_2",
+    "Psikolog_1_Result.xlsx": "psychologist_1",
+    "Psikolog_1_lanjutan_Result.xlsx": "psychologist_1",
+    "Psikolog_2_Result.xlsx": "psychologist_2",
 }
 # design §2: P1 union = 36 packets; 24 counselor cases x 2 conditions = 48 answers.
 P1_EXPECTED, P2_EXPECTED = 36, 48

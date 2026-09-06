@@ -106,3 +106,17 @@ documents/distribution_flow.*
 # ---- study-administration tooling, not method ----
 scripts/build_*_slides.py
 scripts/keep_alive.py
+
+# ---- thesis working folder: manuscript, appendices, participant records ----
+# Contains the thesis drafts, the Multimedia Appendices, the staged Google Drive
+# upload (completed participant workbooks, signed consent forms) and the
+# reference/edit working files. None of it is code, and much of it must never
+# be public. Excluded as a directory so a future `git add -A` cannot sweep it in.
+documents/thesis_clean/
+
+# ---- thesis-writing helper scripts, not pipeline ----
+scripts/revise_thesis_*.py
+
+# ---- figure/appendix builders: code is published, but not the repeated-run
+# probe, which is not reported in the thesis (each briefing was scored once) ----
+scripts/figures/ragas_repeat_runs.py

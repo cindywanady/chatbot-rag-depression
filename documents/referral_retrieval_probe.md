@@ -123,8 +123,9 @@ first-person forum narratives.
 | control / gold register | 11 words | 9–17 |
 | frozen study questions | **87 words** | 30–263 |
 
-> *"Halo dok, mau tanya. Saya suka mengalami susah tidur kadang sampai seminggu,
-> kalo ada masalah…"* (Q01, flagged risky)
+> *[Q01, flagged risky: an 80-word first-person narrative describing intermittent
+> insomnia lasting up to two weeks, tied to periods of stress. The verbatim text
+> is not reproduced here; the study questions are de-identified but not anonymous.]*
 
 A narrative like this is dense in symptom description and contains no referral
 vocabulary at all. Under dense retrieval it lands squarely on symptom and
