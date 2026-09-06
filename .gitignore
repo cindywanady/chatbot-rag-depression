@@ -117,6 +117,9 @@ documents/thesis_clean/
 # ---- thesis-writing helper scripts, not pipeline ----
 scripts/revise_thesis_*.py
 
-# ---- figure/appendix builders: code is published, but not the repeated-run
-# probe, which is not reported in the thesis (each briefing was scored once) ----
+# ---- figure scripts are published; appendix builders are held back until the
+# Multimedia Appendices themselves are released. The repeated-run probe stays
+# out permanently: the thesis reports a single scoring run. ----
 scripts/figures/ragas_repeat_runs.py
+scripts/figures/build_appendix*.py
+scripts/figures/build_full_appendix.py
