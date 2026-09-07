@@ -4,7 +4,7 @@
 management *from the segments themselves* — no predefined concept list is given.
 This provides a bottom-up justification for the gold-passage concepts (instead of
 asserting them). Run on >=1 LLM (e.g. Claude + GPT); their proposed concepts are
-then reconciled with each other and with `build_spec.md` line 228 to fix the final
+then reconciled with each other and with the project concept list to fix the final
 vocabulary used in Stage 2 (`gold-concept-v1`).
 
 **Stage in the workflow:**

@@ -32,7 +32,7 @@ requirements into explicit rules, then frozen verbatim and versioned here so the
 exact instruction is auditable (like a coding codebook in qualitative research).
 
 **Design inputs (the basis, not a generating prompt):**
-- **`build_spec.md` §2.5** — the evaluation requirements;
+- **the retrieval evaluation requirements** (question types, grounding rules);
 - **Baur et al.** (method reference) — synthesize from source text, constrain to a
   realistic non-specialist user, then human-validate;
 - **Author constraints** — non-specialist-counselor persona, remove FKTP framing,

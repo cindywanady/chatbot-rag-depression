@@ -1,5 +1,6 @@
 # =============================================================================
-# Requirements for the CHUNKING PIPELINE (Phase 1: spec sections 2.2-2.3).
+# Requirements for the CHUNKING PIPELINE (Phase 1: extraction, cleaning,
+# segmentation and chunking).
 #
 # Install into the project-local virtual environment (kept INSIDE chatbot_dep):
 #
@@ -18,7 +19,7 @@
 # --- PDF extraction + rasterization -----------------------------------------
 PyMuPDF==1.24.10
 
-# --- Reference tokenizer (token-based chunk sizing, spec 2.3 tokenizer note) -
+# --- Reference tokenizer (fixes "tokens" across chunking configurations) -----
 transformers==4.46.2
 tokenizers==0.20.3
 sentencepiece==0.2.0

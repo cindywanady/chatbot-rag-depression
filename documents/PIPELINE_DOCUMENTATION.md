@@ -607,7 +607,6 @@ the pre-specified analysis without altering any frozen decision.
 | `evaluation/README_evaluation_design.md` | instrument harmonisation, blinding, IRR, procedure |
 | `evaluation/JUSTIFIKASI_instrumen.md` | **defence sheet (Indonesian)**: every item, its source, and the answer to "why does this item exist?" — written for supervisor questions |
 | `evaluation/form_*.md` | the actual rating/answer forms (Indonesian) |
-| `build_spec_phase1.md` | the original Phase-1 build specification |
 | `phase2_*_notes.md`, `chunking_*`, `qa_generation_summary.md`, `content_type_notes.md`, `reference_tokenizer_notes.md` | the decision record: *why* each methodology choice was made |
 | `pipeline_audit.md` | independent artifact-level audit of every reported number (2026-07-02, Phase 1 only) |
 | `pipeline_audit_20260726.md` | full-chain audit (2026-07-26): connectivity, reproducibility, contradictions, dead weight — **read its §1 verdict and §2 findings table before trusting any Phase-2/3 number** |
@@ -715,7 +714,7 @@ the briefing against a document of a different genre.
 
 | Period (2026) | What happened |
 |---|---|
-| late June | Phase-1 build spec written (`build_spec_phase1.md`); extraction/cleaning/segmentation built; reference tokenizer decided; content-type labels defined and LLM-audited (κ ≈ 0.8) |
+| late June | Phase-1 design settled; extraction/cleaning/segmentation built; reference tokenizer decided; content-type labels defined and LLM-audited (κ ≈ 0.8) |
 | ≈ Jun 29 – Jul 1 | embedding/indexing pipeline; gold passages + concept induction/audit; 124-question gold set generated, validated, frozen (reduced to 121 on 2026-07-26) |
 | Jul 2 | retrieval bake-off run; **selection frozen**; independent `pipeline_audit.md` re-verified every number |
 | Jul 5–7 | chatbot deployed (vLLM + web UI); evaluation instruments drafted (ESHRO + Park harmonisation, forms in Indonesian) |

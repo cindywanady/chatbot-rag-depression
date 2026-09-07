@@ -1,6 +1,6 @@
 # Phase 1 §2.5 — Gold evaluation set: design notes
 
-*Companion to `documents/build_spec_phase1.md` §2.5. Written 2026-06-30. Covers
+*Working notes on the frozen retrieval benchmark. Written 2026-06-30. Covers
 the gold relevance passages and the depression-specific question set that the
 retrieval bake-off (§2.6) is scored against. Style matches
 `reference_tokenizer_notes.md` and `phase2_embedding_indexing_notes.md`.*

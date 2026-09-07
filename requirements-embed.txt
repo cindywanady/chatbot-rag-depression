@@ -1,5 +1,5 @@
 # =============================================================================
-# Phase 2 dependencies: embedding + indexing (build_spec.md §2.4).
+# Phase 2 dependencies: embedding the chunks and building the FAISS indexes.
 #
 # Install ON TOP of requirements.txt:
 #     ./.venv/bin/pip install -r requirements-embed.txt

@@ -1,6 +1,6 @@
 # Phase 2 — Embedding + Indexing: Notes & Decisions
 
-Working notes for build_spec §2.4 (embedding the chunks with four models and
+Working notes on embedding the chunks with four models and
 building one exact-cosine FAISS index per configuration). Covers what was built,
 the decisions and their justifications, the truncation analysis we worked
 through, and how to reproduce everything. All numbers were measured on this
@@ -270,7 +270,7 @@ AutoTokenizer.from_pretrained(ckpt).num_special_tokens_to_add(pair=False)   # ==
 
 ---
 
-## 9. Still to come (spec 2.5)
+## 9. Still to come (retrieval evaluation)
 
 `Retriever` + a gold depression-QA set + the relevance mapping (char-overlap of
 retrieved chunks against `cleaned_text.txt`) + the metrics table that selects the

@@ -7,7 +7,8 @@ are justified by external LLM annotation, not asserted by hand. Run on >=1 LLM;
 agreement justifies the design, disagreements are reviewed.
 
 **Stage in the workflow.** Stage 2 of the gold-concept process. The codebook below is the **frozen final concept list** (12) reconciled from
-Stage 1 (`gold-concept-induction-v1`, Claude + GPT) and `build_spec.md` line 228:
+Stage 1 (`gold-concept-induction-v1`, run on two model families) and the project
+concept list:
 the spec's 11 + `differential_comorbidity` (added because both inductive runs
 surfaced it). See `phase2_5_gold_eval_notes.md` §2.5.
 

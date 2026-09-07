@@ -1,6 +1,6 @@
 # `content_type` / `meta_content_type` — definition note
 
-*Companion to `documents/build_spec.md` (Phase 1 §2.2–2.3). Written 2026-06-30.
+*Working notes on extraction, cleaning and segmentation. Written 2026-06-30.
 Defines how the `content_type` label is assigned to segments and how it becomes
 `meta_content_type` on chunks, so the field's provenance is auditable.*
 

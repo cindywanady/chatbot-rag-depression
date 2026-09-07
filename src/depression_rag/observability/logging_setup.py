@@ -1,8 +1,8 @@
 """Structured (JSON) logging.
 
-Spec 2.2 makes this a hard requirement for the whole phase: "use the
-``logging`` module with structured (JSON) records ... bake it in from the first
-script, not as an afterthought." Every stage logs one JSON object per event,
+Structured logging is a hard requirement for the whole pipeline: the
+``logging`` module with JSON records, built in from the first script rather
+than added afterwards. Every stage logs one JSON object per event,
 with arbitrary structured fields passed via ``extra=``::
 
     log = get_logger("segmentation")

@@ -1,6 +1,6 @@
 # Phase 1 §2.6 — Retrieval bake-off & configuration selection: design notes
 
-*Companion to `documents/build_spec.md` §2.5 Step 4 + §2.6. Written 2026-07-02.
+*Working notes on retriever scoring and selection. Written 2026-07-02.
 Covers the cross-strategy relevance mapping, the rank-aware metrics, the
 confidence intervals + paired significance, and the justified selection of the
 single retrieval configuration. Style matches `phase2_5_gold_eval_notes.md` and
