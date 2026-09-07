@@ -8,7 +8,7 @@ Source : outputs/analysis/p1_scores.csv  (44 ratings of 36 briefing packets)
 The point of the figure is the pattern the Results paragraph states: the two
 raters diverge on domains concerning the counselor's scope of action and agree
 closely on domains concerning the clinical content of the briefing. Domains are
-therefore ordered by the size of the between-rater gap.
+therefore ordered by the size of the absolute between-rater gap.
 """
 from __future__ import annotations
 
@@ -96,10 +96,10 @@ def build(data):
     ax.set_xlim(1.0, 5.22)
     ax.set_xticks([1, 2, 3, 4, 5])
     ax.set_ylim(-0.7, len(data) - 0.15)
-    ax.set_xlabel("Mean rating (1–5, higher is more favourable)")
+    ax.set_xlabel("Mean rating (1–5, higher is more favorable)")
     tidy(ax, grid_axis="x")
 
-    ax.text(5.16, len(data) - 0.35, "gap", va="center", ha="right",
+    ax.text(5.16, len(data) - 0.35, "absolute gap", va="center", ha="right",
             fontsize=7.5, style="italic", color=PALETTE["grey"])
 
     handles = [
@@ -114,7 +114,7 @@ def build(data):
               ncol=2, columnspacing=1.8)
 
     fig.text(0.0, -0.045,
-             "Domains ordered by the between-rater gap. Above the dashed rule the raters differ by more than 1 point;\n"
+             "Domains ordered by the absolute between-rater gap. Above the dashed rule the raters differ by more than 1 point;\n"
              "those domains all concern the counselor's scope of action rather than the clinical content of the briefing.",
              fontsize=7.2, color=PALETTE["grey"], ha="left", va="top", linespacing=1.5)
     fig.tight_layout()
@@ -125,5 +125,5 @@ if __name__ == "__main__":
     d = load()
     for row in sorted(d, key=lambda r: -r["gap"]):
         print(f"  {row['label']:34s} P1={row['p1']:.3f}  P2={row['p2']:.3f}  gap={row['gap']:.3f}")
-    for p in save(build(d), "figure5_psychologist_domains_by_rater"):
+    for p in save(build(d), "figure4_psychologist_domains_by_rater"):
         print("wrote", p.relative_to(ROOT))

@@ -111,21 +111,23 @@ def build(pairs):
     ax.set_xlim(-0.42, 1.42)
     ax.set_xticks([0, 1])
     ax.set_xticklabels(["Assigned access", "No assigned access"])
-    ax.set_ylim(2.4, 10.4)
-    ax.set_yticks(range(3, 11))
+    # full outcome scale: a truncated axis makes the within-pair differences
+    # look larger than they are (observed ratings run 3 to 10)
+    ax.set_ylim(-0.4, 10.4)
+    ax.set_yticks(range(0, 11, 2))
     ax.set_ylabel("Psychologist global rating of the response (0–10)")
     tidy(ax, grid_axis="y")
     ax.tick_params(axis="x", length=0, pad=6)
 
     handles = [
         Line2D([0], [0], color=PALETTE["ink"], linewidth=1.15, linestyle="-",
-               label="With-access response by Counselor 1"),
+               label="Assigned-access response by Counselor 1"),
         Line2D([0], [0], color=PALETTE["ink"], linewidth=1.15,
-               linestyle=(0, (4, 2.5)), label="With-access response by Counselor 2"),
+               linestyle=(0, (4, 2.5)), label="Assigned-access response by Counselor 2"),
         Line2D([0], [0], color=PALETTE["green"], linewidth=2.0,
-               label=f"Higher with access ({up})"),
+               label=f"Higher for assigned-access response ({up})"),
         Line2D([0], [0], color=PALETTE["vermil"], linewidth=2.0,
-               label=f"Higher without access ({down})"),
+               label=f"Higher for response without assigned access ({down})"),
         Line2D([0], [0], color=PALETTE["lgrey"], linewidth=2.0,
                label=f"Tied ({tie})"),
     ]
@@ -149,5 +151,5 @@ if __name__ == "__main__":
     print(f"  pairs={len(pairs)}  higher with={up}  higher without={dn}  tied={len(pairs)-up-dn}")
     print(f"  mean with={statistics.mean(p['with'] for p in pairs):.2f}  "
           f"without={statistics.mean(p['without'] for p in pairs):.2f}")
-    for p in save(build(pairs), "figure6_paired_response_ratings"):
+    for p in save(build(pairs), "figure5_paired_response_ratings"):
         print("wrote", p.relative_to(ROOT))

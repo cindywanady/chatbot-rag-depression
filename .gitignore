@@ -123,3 +123,9 @@ scripts/revise_thesis_*.py
 scripts/figures/ragas_repeat_runs.py
 scripts/figures/build_appendix*.py
 scripts/figures/build_full_appendix.py
+
+# ---- editor/script backups ----
+*.py.bak
+*.tex.bak
+*.drawio.bak
+*.svg.bak

@@ -99,9 +99,12 @@ def build(rows):
     tidy(ax, grid_axis="both")
 
     rho, pvalue = spearmanr(x, y)
+    # manuscript notation: rho=-0.09; P=.54 — true minus sign, no leading zero on P
+    rho_txt = f"{rho:.2f}".replace("-", "\u2212")
+    p_txt = f"{pvalue:.2f}".lstrip("0")
     ax.text(
         0.035, 0.968,
-        f"Spearman $\\rho$ = {rho:.2f}   $P$ = {pvalue:.2f}\n"
+        f"Spearman $\\rho$={rho_txt}; $P$={p_txt}\n"
         f"{len(rows)} in-scope briefings",
         transform=ax.transAxes, fontsize=7.8, va="top", ha="left",
         linespacing=1.5,
@@ -113,7 +116,7 @@ def build(rows):
         Line2D(
             [0], [0], marker="o", linestyle="none", markersize=5,
             markerfacecolor=PALETTE["blue"], markeredgecolor="white",
-            label=f"Briefing (n = {len(rows)})",
+            label=f"Briefing (n={len(rows)})",
         )
     ]
     ax.legend(
@@ -123,7 +126,8 @@ def build(rows):
 
     note = (
         "Points above the diagonal scored higher on claim support than on RAGAS faithfulness.\n"
-        "Claim support counts distinct clinical claims; RAGAS faithfulness evaluates all statements."
+        "Claim support evaluates distinct clinical claims and excludes headings and procedural sentences;\n"
+        "RAGAS faithfulness evaluates all statements."
     )
     fig.text(
         0.0, -0.02, note, fontsize=7.2, color=PALETTE["grey"],
@@ -136,5 +140,5 @@ def build(rows):
 if __name__ == "__main__":
     rows = load()
     assert len(rows) == 48, f"expected 48 in-scope briefings, got {len(rows)}"
-    for path in save(build(rows), "figure4_claim_support_vs_ragas"):
+    for path in save(build(rows), "figure3_claim_support_vs_ragas"):
         print("wrote", path.relative_to(ROOT))

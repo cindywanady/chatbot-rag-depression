@@ -104,8 +104,8 @@ def panel_helpfulness(ax, helpfulness):
 
 def panel_words(ax, words):
     ax.set_title("B  Response length")
-    conditions = [("chatbot", "with access", PALETTE["blue"], "o"),
-                  ("no_chatbot", "without", PALETTE["orange"], "s")]
+    conditions = [("chatbot", "Assigned access", PALETTE["blue"], "o"),
+                  ("no_chatbot", "No assigned access", PALETTE["orange"], "s")]
     for x, c in enumerate(COUNSELORS):
         for k, (cond, _, colour, marker) in enumerate(conditions):
             vals = words[c][cond]
